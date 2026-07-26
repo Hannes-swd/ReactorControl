@@ -1,0 +1,5 @@
+# Build-Ausgabe (CMake, Raylib-FetchContent, kompilierte Binaries)
+build/
+
+# Claude Code lokale Einstellungen
+.claude/
