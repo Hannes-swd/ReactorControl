@@ -13,7 +13,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
-add_executable(reactor_control src/main.cpp)
+add_executable(reactor_control
+    src/main.cpp
+    src/ui/camera_controller.cpp
+    src/ui/renderer.cpp
+)
 
 target_link_libraries(reactor_control PRIVATE raylib)
 
