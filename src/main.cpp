@@ -59,13 +59,17 @@ int main() {
             break;
         }
 
-        // Pfeiltasten wechseln die Blickrichtung (links/mitte/rechts) zyklisch - vom rechten
-        // Rand kommt man mit Pfeil rechts direkt zum linken zurueck (und umgekehrt), ohne
-        // ueber die Mitte zu muessen. Die Position bleibt fest, es wird nicht frei bewegt.
+        // Pfeiltasten wechseln die Blickrichtung (links/mitte/rechts) schrittweise, nicht
+        // zyklisch: an den Raendern (links/rechts) bewegt nur die Taste in Richtung Mitte
+        // etwas, die Taste zum Rand hin macht nichts. Die Position bleibt fest.
         if (IsKeyPressed(KEY_RIGHT)) {
-            currentView = (currentView + 1) % 3;
+            if (currentView < 2) {
+                currentView++;
+            }
         } else if (IsKeyPressed(KEY_LEFT)) {
-            currentView = (currentView + 2) % 3;
+            if (currentView > 0) {
+                currentView--;
+            }
         }
         camera.position = standPosition;
         camera.target = viewTargets[currentView];
@@ -90,7 +94,6 @@ int main() {
             DrawText("Kein Modell gefunden: assets/Desk.obj", 10, 40, 20, GRAY);
         }
         const char* viewNames[3] = { "Links", "Mitte", "Rechts" };
-        DrawText(TextFormat("Blick: %s (Pfeiltasten zum Wechseln)", viewNames[currentView]), 10, 70, 20, GRAY);
         DrawFPS(10, 10);
 
         EndDrawing();
