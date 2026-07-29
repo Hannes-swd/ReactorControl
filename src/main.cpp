@@ -5,6 +5,7 @@
 #include "core/gameconfig.h"
 #include "ui/camera_controller.h"
 #include "ui/renderer.h"
+#include "ui/table_cursor.h"
 
 namespace {
 
@@ -25,6 +26,7 @@ int main() {
 
     CameraController cameraController;
     SceneRenderer sceneRenderer;
+    TableCursor tableCursor;
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_ESCAPE)) {
@@ -33,12 +35,14 @@ int main() {
 
         cameraController.HandleInput();
         sceneRenderer.UpdateShaderCameraPosition(cameraController.GetCamera().position);
+        tableCursor.Update(cameraController.GetCamera());
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
         BeginMode3D(cameraController.GetCamera());
         sceneRenderer.DrawScene();
+        tableCursor.Draw();
         EndMode3D();
 
         if (!sceneRenderer.HasConsoleModel()) {

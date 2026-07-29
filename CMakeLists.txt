@@ -17,6 +17,7 @@ add_executable(reactor_control
     src/main.cpp
     src/ui/camera_controller.cpp
     src/ui/renderer.cpp
+    src/ui/table_cursor.cpp
 )
 
 target_link_libraries(reactor_control PRIVATE raylib)

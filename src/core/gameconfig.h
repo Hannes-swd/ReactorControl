@@ -38,4 +38,33 @@ constexpr float LightSphereRadius = 0.2f;
 constexpr int LightSphereRings = 8;
 constexpr int LightSphereSlices = 8;
 
+// Die drei geneigten Pult-Oberflaechen (Mitte + linker/rechter Fluegel). Je Flaeche ist
+// Origin die obere Ecke naeher am Spieler, UAxis/VAxis spannen die schraege Flaeche auf
+// (aus den Top-Face-Vertices von Desk.obj abgeleitet, stehen senkrecht zueinander). Rows/
+// Cols sind je Flaeche an deren Groesse angepasst, damit alle Zellen etwa gleich gross
+// sind (~0.2 Einheiten).
+struct TableSurface {
+    Vector3 origin;
+    Vector3 uAxis;
+    Vector3 vAxis;
+    int rows;
+    int cols;
+};
+
+constexpr TableSurface TableSurfaces[] = {
+    // Mitte (Cube, Top-Face v1/v5/v7/v3)
+    { { -1.0f, 1.0f, -3.396848f }, { 2.0f, 1.327838f, 0.0f }, { 0.0f, 0.0f, 7.975538f }, 12, 40 },
+    // Rechter Fluegel (Cube.001, Top-Face v9/v13/v15/v11)
+    { { -0.438935f, 1.0f, 3.169075f }, { 1.438935f, 1.327838f, 1.409615f }, { -3.470372f, 0.0f, 3.527964f }, 12, 25 },
+    // Linker Fluegel (Cube.002, Top-Face v17/v21/v23/v19)
+    { { -3.972384f, 1.013700f, -5.481921f }, { 1.414213f, 1.327838f, -1.414213f }, { 3.499286f, 0.0f, 3.499286f }, 12, 25 },
+};
+
+constexpr size_t TableSurfaceCount = sizeof(TableSurfaces) / sizeof(TableSurfaces[0]);
+
+// Kreis, der der Maus (der "Hand" des Spielers) live auf der getroffenen Tischflaeche folgt.
+constexpr float TableCursorRadius = 0.08f;
+constexpr float TableCursorSurfaceOffset = 0.01f;
+constexpr int TableCursorSegments = 24;
+
 } // namespace GameConfig
