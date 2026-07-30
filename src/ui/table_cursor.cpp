@@ -17,12 +17,6 @@ void DrawTriangle3DBothSides(Vector3 v1, Vector3 v2, Vector3 v3, Color color) {
 
 constexpr float kTwoPi = 6.28318530718f;
 
-// VAxis x UAxis zeigt bei allen drei Pult-Flaechen nach oben/aussen zum Spieler hin;
-// die andere Reihenfolge zeigt ins Tischinnere.
-Vector3 SurfaceNormal(const GameConfig::TableSurface& surface) {
-    return Vector3Normalize(Vector3CrossProduct(surface.vAxis, surface.uAxis));
-}
-
 } // namespace
 
 void TableCursor::Update(const Camera3D& camera) {
@@ -50,7 +44,7 @@ void TableCursor::Update(const Camera3D& camera) {
             continue;
         }
 
-        Vector3 n = SurfaceNormal(surface);
+        Vector3 n = GameConfig::SurfaceNormal(surface);
         Vector3 local = Vector3Subtract(collision.point, surface.origin);
         float tu = Vector3DotProduct(local, surface.uAxis) / Vector3DotProduct(surface.uAxis, surface.uAxis);
         float tv = Vector3DotProduct(local, surface.vAxis) / Vector3DotProduct(surface.vAxis, surface.vAxis);
@@ -71,7 +65,7 @@ Vector3 TableCursor::CornerPoint(int section, float fu, float fv) const {
     const GameConfig::TableSurface& s = GameConfig::TableSurfaces[section];
     Vector3 onSurface = Vector3Add(s.origin,
         Vector3Add(Vector3Scale(s.uAxis, fu), Vector3Scale(s.vAxis, fv)));
-    return Vector3Add(onSurface, Vector3Scale(SurfaceNormal(s), GameConfig::TableCursorSurfaceOffset));
+    return Vector3Add(onSurface, Vector3Scale(GameConfig::SurfaceNormal(s), GameConfig::TableCursorSurfaceOffset));
 }
 
 void TableCursor::Draw() const {

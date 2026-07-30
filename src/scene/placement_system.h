@@ -7,11 +7,16 @@
 #include <vector>
 
 // Laedt Objekt-Platzierungen aus einer JSON-Datei (siehe GameConfig::PlacementsJsonPath) und
-// zeichnet die referenzierten Modelle (.glb etc.) an ihrer Gridposition. Eine Gridzelle ist
-// exakt 1x1 Welteinheiten gross. Modelle koennen in Blender beliebig gross exportiert sein:
-// pro Modell wird anhand seiner Bounding Box automatisch ein Normalisierungsfaktor berechnet,
-// der die groesste Ausdehnung auf 1 Einheit skaliert. scale=1.0 in der JSON entspricht also
-// immer "fuellt eine Zelle", scale=0.5 der Haelfte davon - unabhaengig von der Rohgroesse.
+// zeichnet die referenzierten Modelle (.glb etc.) an ihrer Gridposition. Jede Platzierung
+// referenziert eine der drei geneigten Pultflaechen aus GameConfig::TableSurfaces (section)
+// sowie eine Zelle (row, col) auf deren Grid - exakt dasselbe Grid, das TableCursor beim
+// Hover einfaerbt. So landet ein Objekt garantiert in der sichtbaren Gridzelle und nicht an
+// einer frei geschaetzten Weltkoordinate. Modelle koennen in Blender beliebig gross
+// exportiert sein: pro Modell wird anhand seiner Bounding Box automatisch ein
+// Normalisierungsfaktor berechnet, der die groesste Ausdehnung auf die Kantenlaenge einer
+// Gridzelle (~0.2 Welteinheiten, siehe GameConfig::GridCellSize) bringt. scale=1.0 in der
+// JSON entspricht also immer "fuellt genau ein Kaestchen", scale=0.5 der Haelfte davon -
+// unabhaengig von der Rohgroesse des Modells.
 class PlacementSystem {
 public:
     PlacementSystem() = default;

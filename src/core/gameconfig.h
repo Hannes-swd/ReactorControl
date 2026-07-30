@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raylib.h"
+#include "raymath.h"
 #include "enums.h"
 
 // Statische Konfigurationswerte des Spiels (Fenster, Kamera-Positionen, Asset-Pfade, ...).
@@ -66,6 +67,31 @@ constexpr TableSurface TableSurfaces[] = {
 };
 
 constexpr size_t TableSurfaceCount = sizeof(TableSurfaces) / sizeof(TableSurfaces[0]);
+
+// VAxis x UAxis zeigt bei allen drei Pult-Flaechen nach oben/aussen zum Spieler hin;
+// die andere Reihenfolge zeigt ins Tischinnere. Gemeinsam genutzt von TableCursor (Hover-
+// Markierung) und PlacementSystem (Grid-Platzierung), damit beide dieselbe Flaechen-
+// Normale berechnen.
+inline Vector3 SurfaceNormal(const TableSurface& surface) {
+    return Vector3Normalize(Vector3CrossProduct(surface.vAxis, surface.uAxis));
+}
+
+// Kantenlaenge einer Gridzelle in Welteinheiten (~0.2). Rows/Cols sind ganzzahlig, deshalb
+// sind die Zellen nicht exakt quadratisch - es wird die kleinere der beiden Kanten genommen,
+// damit ein darauf skaliertes Modell garantiert in beide Richtungen in die Zelle passt.
+inline float GridCellSize(const TableSurface& surface) {
+    float uCell = Vector3Length(surface.uAxis) / static_cast<float>(surface.rows);
+    float vCell = Vector3Length(surface.vAxis) / static_cast<float>(surface.cols);
+    return fminf(uCell, vCell);
+}
+
+// Weltposition der Zellmitte (row, col) auf der gegebenen Pultflaeche.
+inline Vector3 GridCellCenter(const TableSurface& surface, int row, int col) {
+    float tu = (static_cast<float>(row) + 0.5f) / static_cast<float>(surface.rows);
+    float tv = (static_cast<float>(col) + 0.5f) / static_cast<float>(surface.cols);
+    return Vector3Add(surface.origin,
+        Vector3Add(Vector3Scale(surface.uAxis, tu), Vector3Scale(surface.vAxis, tv)));
+}
 
 // Kreis, der der Maus (der "Hand" des Spielers) live auf der getroffenen Tischflaeche folgt.
 constexpr float TableCursorRadius = 0.08f;
