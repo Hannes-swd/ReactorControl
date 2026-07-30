@@ -31,6 +31,11 @@ constexpr const char* ConsoleModelPath = "assets/Desk.obj";
 constexpr const char* LightingShaderVsPath = "assets/shaders/glsl330/lighting.vs";
 constexpr const char* LightingShaderFsPath = "assets/shaders/glsl330/lighting.fs";
 
+// Platzierungssystem: JSON-Datei mit Grid-Platzierungen, Modelle liegen relativ zu ModelsDirectory.
+// Eine Gridzelle ist immer exakt 1x1 Welteinheiten gross (siehe PlacementSystem).
+constexpr const char* PlacementsJsonPath = "assets/placements.json";
+constexpr const char* ModelsDirectory = "assets/models/";
+
 constexpr Vector3 LightPosition = { 6.0f, 8.0f, 6.0f };
 constexpr float AmbientColor[4] = { 0.25f, 0.25f, 0.25f, 1.0f };
 

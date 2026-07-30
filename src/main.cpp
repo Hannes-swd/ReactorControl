@@ -3,6 +3,7 @@
 #define RLIGHTS_IMPLEMENTATION
 #include "core/enums.h"
 #include "core/gameconfig.h"
+#include "scene/placement_system.h"
 #include "ui/camera_controller.h"
 #include "ui/renderer.h"
 #include "ui/table_cursor.h"
@@ -21,12 +22,17 @@ const char* ViewSideName(ViewSide view) {
 } // namespace
 
 int main() {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(GameConfig::ScreenWidth, GameConfig::ScreenHeight, "ReactorControl");
+    SetWindowMinSize(960, 540);
     SetTargetFPS(GameConfig::TargetFPS);
 
     CameraController cameraController;
     SceneRenderer sceneRenderer;
     TableCursor tableCursor;
+
+    PlacementSystem placementSystem;
+    placementSystem.LoadFromJson(GameConfig::PlacementsJsonPath, sceneRenderer.GetLightShader());
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_ESCAPE)) {
@@ -42,6 +48,7 @@ int main() {
 
         BeginMode3D(cameraController.GetCamera());
         sceneRenderer.DrawScene();
+        placementSystem.Draw();
         tableCursor.Draw();
         EndMode3D();
 

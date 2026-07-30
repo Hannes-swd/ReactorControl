@@ -18,13 +18,17 @@ add_executable(reactor_control
     src/ui/camera_controller.cpp
     src/ui/renderer.cpp
     src/ui/table_cursor.cpp
+    src/scene/placement_system.cpp
 )
 
 target_link_libraries(reactor_control PRIVATE raylib)
 
-# Kopiert assets/ (3D-Modelle, Texturen, ...) neben die exe, damit LoadModel("assets/...")
-# unabhaengig vom Arbeitsverzeichnis funktioniert.
+# Verknuepft assets/ neben der exe mit dem echten Ordner (statt zu kopieren), damit
+# LoadModel("assets/...") unabhaengig vom Arbeitsverzeichnis funktioniert UND Schreibzugriffe
+# (z.B. PlacementSystem::SaveRotations) direkt in der Quelldatei landen.
 add_custom_command(TARGET reactor_control POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:reactor_control>/assets"
+    COMMAND ${CMAKE_COMMAND}
+        -DTARGET_ASSETS_DIR=$<TARGET_FILE_DIR:reactor_control>/assets
+        -DSOURCE_ASSETS_DIR=${CMAKE_SOURCE_DIR}/assets
+        -P "${CMAKE_SOURCE_DIR}/cmake/LinkAssets.cmake"
 )

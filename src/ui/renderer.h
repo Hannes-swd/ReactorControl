@@ -23,6 +23,10 @@ public:
 
     bool HasConsoleModel() const { return hasConsoleModel; }
 
+    // Damit extern geladene Modelle (z.B. PlacementSystem) mit dem gleichen Licht
+    // beleuchtet werden wie die Szene.
+    Shader GetLightShader() const { return lightShader; }
+
 private:
     Shader lightShader;
     Light lights[MAX_LIGHTS];
