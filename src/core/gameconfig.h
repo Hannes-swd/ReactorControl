@@ -76,6 +76,25 @@ inline Vector3 SurfaceNormal(const TableSurface& surface) {
     return Vector3Normalize(Vector3CrossProduct(surface.vAxis, surface.uAxis));
 }
 
+// Rotationsmatrix, die ein Modell (lokal X=rechts/Y=oben/Z=vorne) exakt auf die Ausrichtung
+// der Pultflaeche legt: Neigung UND Verdrehung. uAxis/vAxis stehen laut obigem Kommentar
+// senkrecht zueinander und beide senkrecht zur Normalen, bilden also mit ihr bereits eine
+// orthogonale Basis - es muss nur noch normalisiert werden. Dadurch braucht eine Platzierung
+// (siehe PlacementSystem) keinen manuellen Korrektur-Winkel mehr, auch nicht auf den
+// diagonal zur Haupttischachse stehenden Nebentischen.
+inline Matrix SurfaceOrientation(const TableSurface& surface) {
+    Vector3 right = Vector3Normalize(surface.uAxis);
+    Vector3 forward = Vector3Normalize(surface.vAxis);
+    Vector3 up = SurfaceNormal(surface);
+
+    Matrix m = { 0 };
+    m.m0 = right.x;   m.m1 = right.y;   m.m2 = right.z;
+    m.m4 = up.x;      m.m5 = up.y;      m.m6 = up.z;
+    m.m8 = forward.x; m.m9 = forward.y; m.m10 = forward.z;
+    m.m15 = 1.0f;
+    return m;
+}
+
 // Kantenlaenge einer Gridzelle in Welteinheiten (~0.2). Rows/Cols sind ganzzahlig, deshalb
 // sind die Zellen nicht exakt quadratisch - es wird die kleinere der beiden Kanten genommen,
 // damit ein darauf skaliertes Modell garantiert in beide Richtungen in die Zelle passt.

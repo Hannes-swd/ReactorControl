@@ -1,5 +1,7 @@
 {
     "objects": [
-        { "model": "schluessel.glb", "section": 0, "row": 6, "col": 20, "height": 0.0, "rotationX": 0, "rotation": 0, "rotationZ": 33.58, "scale": 1.0 }
+        { "model": "schluessel.glb", "section": 0, "row": 6, "col": 20 },
+        { "model": "schluessel.glb", "section": 1, "row": 2, "col": 10 },
+        { "model": "schluessel.glb", "section": 2, "row": 2, "col": 10 }
     ]
 }

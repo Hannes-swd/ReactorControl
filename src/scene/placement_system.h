@@ -11,12 +11,17 @@
 // referenziert eine der drei geneigten Pultflaechen aus GameConfig::TableSurfaces (section)
 // sowie eine Zelle (row, col) auf deren Grid - exakt dasselbe Grid, das TableCursor beim
 // Hover einfaerbt. So landet ein Objekt garantiert in der sichtbaren Gridzelle und nicht an
-// einer frei geschaetzten Weltkoordinate. Modelle koennen in Blender beliebig gross
-// exportiert sein: pro Modell wird anhand seiner Bounding Box automatisch ein
-// Normalisierungsfaktor berechnet, der die groesste Ausdehnung auf die Kantenlaenge einer
-// Gridzelle (~0.2 Welteinheiten, siehe GameConfig::GridCellSize) bringt. scale=1.0 in der
-// JSON entspricht also immer "fuellt genau ein Kaestchen", scale=0.5 der Haelfte davon -
-// unabhaengig von der Rohgroesse des Modells.
+// einer frei geschaetzten Weltkoordinate. Pflichtfelder in der JSON sind nur "model",
+// "section", "row" und "col"; alles andere hat einen automatischen Default:
+// - Modelle koennen in Blender beliebig gross exportiert sein: pro Modell wird anhand seiner
+//   Bounding Box automatisch ein Normalisierungsfaktor berechnet, der die groesste Ausdehnung
+//   auf die Kantenlaenge einer Gridzelle (~0.2 Welteinheiten, siehe GameConfig::GridCellSize)
+//   bringt. "scale" (Default 1.0) skaliert relativ dazu - 1.0 "fuellt genau ein Kaestchen".
+// - Die Neigung zur (moeglicherweise geneigten) Tischflaeche wird automatisch aus deren
+//   Normale berechnet, dafuer muss nichts angegeben werden.
+// - "rotation" (Default 0) ist optional die Blickrichtung/Ausrichtung des Objekts auf dem
+//   Grid, in Grad um seine eigene Hochachse, bevor es auf die Flaeche gekippt wird.
+// - "height" (Default 0) ist optional ein Abstand von der Tischflaeche entlang deren Normale.
 class PlacementSystem {
 public:
     PlacementSystem() = default;
@@ -45,11 +50,10 @@ private:
         LoadedModel* loadedModel;
         Vector3 position;
         float scale;
-        // rotationX/Z: Korrektur-Tilt, damit das Modell richtig zur Pultneigung liegt.
-        // rotationY: Blickrichtung/Ausrichtung auf dem Grid.
-        float rotationX;
-        float rotationY;
-        float rotationZ;
+        // Fertige Rotationsmatrix: Blickrichtung (rotation) um die eigene Hochachse, gefolgt
+        // von der automatisch berechneten Kippung zur Pultneigung. Wird einmalig beim Laden
+        // bestimmt, da sich weder Platzierung noch Tischflaechen zur Laufzeit aendern.
+        Matrix rotation;
     };
 
     LoadedModel& GetOrLoadModel(const std::string& path, Shader shader);

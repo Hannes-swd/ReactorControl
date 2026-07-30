@@ -12,12 +12,12 @@ using nlohmann::json;
 
 namespace {
 
-// Kleinste Projektion der Modell-Bounding-Box auf die gegebene Achse, nachdem der Korrektur-
-// Tilt (rotationX/Z) angewendet wurde. Wird gebraucht, um das Modell nach dem Kippen korrekt
-// auf die (moeglicherweise geneigte) Tischflaeche zu setzen - eine Achsen-Bounding-Box laesst
-// sich nicht einfach mitrotieren, deshalb alle 8 Eckpunkte transformieren und das Minimum
-// entlang der Flaechen-Normalen neu bestimmen.
-float RotatedMinAlongAxis(const BoundingBox& bounds, const Matrix& tilt, const Vector3& axis) {
+// Kleinste Projektion der Modell-Bounding-Box auf die gegebene Achse, nachdem die
+// Flaechen-Ausrichtung (Neigung + Verdrehung, siehe GameConfig::SurfaceOrientation)
+// angewendet wurde. Wird gebraucht, um das Modell danach korrekt auf die Tischflaeche zu
+// setzen - eine Achsen-Bounding-Box laesst sich nicht einfach mitrotieren, deshalb alle 8
+// Eckpunkte transformieren und das Minimum entlang der Flaechen-Normalen neu bestimmen.
+float RotatedMinAlongAxis(const BoundingBox& bounds, const Matrix& orientation, const Vector3& axis) {
     float minProjection = FLT_MAX;
     for (int i = 0; i < 8; i++) {
         Vector3 corner = {
@@ -25,7 +25,7 @@ float RotatedMinAlongAxis(const BoundingBox& bounds, const Matrix& tilt, const V
             (i & 2) ? bounds.max.y : bounds.min.y,
             (i & 4) ? bounds.max.z : bounds.min.z,
         };
-        float projection = Vector3DotProduct(Vector3Transform(corner, tilt), axis);
+        float projection = Vector3DotProduct(Vector3Transform(corner, orientation), axis);
         minProjection = std::min(minProjection, projection);
     }
     return minProjection;
@@ -87,43 +87,35 @@ void PlacementSystem::LoadFromJson(const char* jsonPath, Shader shader) {
 
         LoadedModel& loaded = GetOrLoadModel(modelPath, shader);
 
-        float rotationX = entry.value("rotationX", 0.0f);
-        float rotationZ = entry.value("rotationZ", 0.0f);
-
         const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[section];
         Vector3 normal = GameConfig::SurfaceNormal(surface);
+        Matrix orientation = GameConfig::SurfaceOrientation(surface);
 
         // autoScale bringt die groesste Rohabmessung auf 1 Einheit, GridCellSize dann auf die
         // tatsaechliche Zellenkante (~0.2). scale=1.0 fuellt damit genau ein Kaestchen.
         float scale = entry.value("scale", 1.0f) * loaded.autoScale * GameConfig::GridCellSize(surface);
 
-        Matrix tilt = MatrixRotateXYZ(Vector3{ rotationX * DEG2RAD, 0.0f, rotationZ * DEG2RAD });
-        // Offset entlang der Flaechen-Normalen, damit der tiefste Punkt des gekippten Modells
-        // exakt auf der Tischflaeche aufsteht (statt auf world-Y = 0, was bei geneigten
-        // Flaechen daneben laege).
-        float groundOffset = -RotatedMinAlongAxis(loaded.bounds, tilt, normal) * scale;
+        // Offset entlang der Flaechen-Normalen, damit der tiefste Punkt des ausgerichteten
+        // Modells exakt auf der Tischflaeche aufsteht (statt auf world-Y = 0, was bei
+        // geneigten/verdrehten Flaechen daneben laege).
+        float groundOffset = -RotatedMinAlongAxis(loaded.bounds, orientation, normal) * scale;
         float height = entry.value("height", 0.0f) + groundOffset;
 
         Vector3 cellCenter = GameConfig::GridCellCenter(surface, entry["row"].get<int>(), entry["col"].get<int>());
         Vector3 position = Vector3Add(cellCenter, Vector3Scale(normal, height));
 
-        placements.push_back(Placement{
-            &loaded,
-            position,
-            scale,
-            rotationX,
-            entry.value("rotation", 0.0f),
-            rotationZ,
-        });
+        float facingDegrees = entry.value("rotation", 0.0f);
+        Matrix rotation = MatrixMultiply(MatrixRotateY(facingDegrees * DEG2RAD), orientation);
+
+        placements.push_back(Placement{ &loaded, position, scale, rotation });
     }
 }
 
 void PlacementSystem::Draw() const {
     for (const auto& placement : placements) {
         Model model = placement.loadedModel->model; // Kopie: transform-Aenderung bleibt lokal fuer diesen Draw-Call
-        Matrix rotation = MatrixRotateXYZ(Vector3{
-            placement.rotationX * DEG2RAD, placement.rotationY * DEG2RAD, placement.rotationZ * DEG2RAD });
-        model.transform = MatrixMultiply(MatrixScale(placement.scale, placement.scale, placement.scale), rotation);
+        model.transform = MatrixMultiply(
+            MatrixScale(placement.scale, placement.scale, placement.scale), placement.rotation);
         DrawModel(model, placement.position, 1.0f, WHITE);
     }
 }
