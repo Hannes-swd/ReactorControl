@@ -1,7 +1,16 @@
 {
-    "objects": [
-        { "model": "schluessel.glb", "section": 0, "row": 6, "col": 20 },
-        { "model": "schluessel.glb", "section": 1, "row": 2, "col": 10 },
-        { "model": "schluessel.glb", "section": 2, "row": 2, "col": 10 }
+    "groups": [
+        {
+            "text": "N1",
+            "button": { "name": "notaus_taste", "model": "schluessel.glb", "section": 0, "row": 6, "col": 20 }
+        },
+        {
+            "text": "P 1",
+            "button": { "name": "pumpe1_schluessel", "model": "schluessel.glb", "section": 1, "row": 2, "col": 10 }
+        },
+        {
+            "text": "F 1",
+            "button": { "name": "pumpe2_schluessel", "model": "schluessel.glb", "section": 2, "row": 2, "col": 10 }
+        }
     ]
 }

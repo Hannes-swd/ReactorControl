@@ -54,7 +54,7 @@ void TableCursor::Update(const Camera3D& camera) {
         point = Vector3Add(collision.point, Vector3Scale(n, GameConfig::TableCursorSurfaceOffset));
         normal = n;
         hoverSection = static_cast<int>(i);
-        hoverRow = static_cast<int>(tu * surface.rows);
+        hoverRow = GameConfig::RowFromFraction(surface, tu);
         hoverCol = static_cast<int>(tv * surface.cols);
         closestDistance = collision.distance;
         visible = true;
@@ -72,8 +72,9 @@ void TableCursor::Draw() const {
     for (size_t s = 0; s < GameConfig::TableSurfaceCount; s++) {
         const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[s];
         for (int row = 0; row <= surface.rows; row++) {
-            Vector3 from = CornerPoint(static_cast<int>(s), static_cast<float>(row) / surface.rows, 0.0f);
-            Vector3 to = CornerPoint(static_cast<int>(s), static_cast<float>(row) / surface.rows, 1.0f);
+            float fu = GameConfig::RowBoundaryFraction(surface, row);
+            Vector3 from = CornerPoint(static_cast<int>(s), fu, 0.0f);
+            Vector3 to = CornerPoint(static_cast<int>(s), fu, 1.0f);
             DrawLine3D(from, to, DARKGRAY);
         }
         for (int col = 0; col <= surface.cols; col++) {
@@ -88,10 +89,14 @@ void TableCursor::Draw() const {
     }
 
     const GameConfig::TableSurface& hoveredSurface = GameConfig::TableSurfaces[hoverSection];
-    Vector3 a = CornerPoint(hoverSection, static_cast<float>(hoverRow) / hoveredSurface.rows, static_cast<float>(hoverCol) / hoveredSurface.cols);
-    Vector3 b = CornerPoint(hoverSection, static_cast<float>(hoverRow + 1) / hoveredSurface.rows, static_cast<float>(hoverCol) / hoveredSurface.cols);
-    Vector3 c = CornerPoint(hoverSection, static_cast<float>(hoverRow + 1) / hoveredSurface.rows, static_cast<float>(hoverCol + 1) / hoveredSurface.cols);
-    Vector3 d = CornerPoint(hoverSection, static_cast<float>(hoverRow) / hoveredSurface.rows, static_cast<float>(hoverCol + 1) / hoveredSurface.cols);
+    float rowStart = GameConfig::RowBoundaryFraction(hoveredSurface, hoverRow);
+    float rowEnd = GameConfig::RowBoundaryFraction(hoveredSurface, hoverRow + 1);
+    float colStart = static_cast<float>(hoverCol) / hoveredSurface.cols;
+    float colEnd = static_cast<float>(hoverCol + 1) / hoveredSurface.cols;
+    Vector3 a = CornerPoint(hoverSection, rowStart, colStart);
+    Vector3 b = CornerPoint(hoverSection, rowEnd, colStart);
+    Vector3 c = CornerPoint(hoverSection, rowEnd, colEnd);
+    Vector3 d = CornerPoint(hoverSection, rowStart, colEnd);
 
     DrawTriangle3DBothSides(a, b, c, ORANGE);
     DrawTriangle3DBothSides(a, c, d, ORANGE);

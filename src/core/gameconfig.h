@@ -4,6 +4,8 @@
 #include "raymath.h"
 #include "enums.h"
 
+#include <algorithm>
+
 // Statische Konfigurationswerte des Spiels (Fenster, Kamera-Positionen, Asset-Pfade, ...).
 // Alles hier ist konstant zur Compile-Zeit, damit im Rest des Codes keine magischen Zahlen
 // mehr vorkommen.
@@ -95,22 +97,85 @@ inline Matrix SurfaceOrientation(const TableSurface& surface) {
     return m;
 }
 
-// Kantenlaenge einer Gridzelle in Welteinheiten (~0.2). Rows/Cols sind ganzzahlig, deshalb
-// sind die Zellen nicht exakt quadratisch - es wird die kleinere der beiden Kanten genommen,
-// damit ein darauf skaliertes Modell garantiert in beide Richtungen in die Zelle passt.
-inline float GridCellSize(const TableSurface& surface) {
-    float uCell = Vector3Length(surface.uAxis) / static_cast<float>(surface.rows);
-    float vCell = Vector3Length(surface.vAxis) / static_cast<float>(surface.cols);
-    return fminf(uCell, vCell);
+// Zeilen wechseln sich entlang der uAxis ab zwischen breiten "Button"-Zeilen (fuer 3D-Objekte,
+// row 0, 2, 4, ...) und schmalen "Label"-Zeilen direkt darunter (fuer Textfelder, row 1, 3, 5,
+// ...). surface.rows muss dafuer geradzahlig sein. ButtonRowWeight/LabelRowWeight bestimmen
+// das Groessenverhaeltnis der beiden Zeilenarten zueinander (3:1 -> Button-Zeile ist 3x so
+// hoch wie die Label-Zeile darunter). TableCursor (Hover/Gridlinien) und PlacementSystem
+// (Platzierung) teilen sich diese Berechnung, damit beide exakt dieselben Zeilengrenzen sehen.
+constexpr float ButtonRowWeight = 3.0f;
+constexpr float LabelRowWeight = 1.0f;
+constexpr float RowPairWeight = ButtonRowWeight + LabelRowWeight;
+
+inline bool IsButtonRow(int row) { return (row % 2) == 0; }
+
+// Bruchteil (0..1) entlang uAxis, an dem die Zeilengrenze VOR `row` liegt. row darf auch
+// gleich surface.rows sein (untere Aussenkante der letzten Zeile).
+inline float RowBoundaryFraction(const TableSurface& surface, int row) {
+    int pairs = surface.rows / 2;
+    float totalWeight = static_cast<float>(pairs) * RowPairWeight;
+    int pairIndex = row / 2;
+    float weight = static_cast<float>(pairIndex) * RowPairWeight;
+    if (row % 2 != 0) {
+        weight += ButtonRowWeight;
+    }
+    return weight / totalWeight;
+}
+
+// Kehrfunktion zu RowBoundaryFraction: liefert die Zeile, in deren Bereich der Bruchteil tu
+// (0..1 entlang uAxis) faellt. Wird von TableCursor beim Hover gebraucht.
+inline int RowFromFraction(const TableSurface& surface, float tu) {
+    int pairs = surface.rows / 2;
+    float totalWeight = static_cast<float>(pairs) * RowPairWeight;
+    float weighted = Clamp(tu, 0.0f, 0.9999f) * totalWeight;
+    int pairIndex = std::min(static_cast<int>(weighted / RowPairWeight), pairs - 1);
+    float withinPair = weighted - static_cast<float>(pairIndex) * RowPairWeight;
+    return pairIndex * 2 + (withinPair < ButtonRowWeight ? 0 : 1);
+}
+
+// Breite einer Gridspalte in Welteinheiten (entlang vAxis) - gleich fuer Button- und
+// Label-Zeilen, da nur Zeilen (uAxis), nicht Spalten (vAxis), unterschiedlich hoch sind.
+inline float CellWidth(const TableSurface& surface) {
+    return Vector3Length(surface.vAxis) / static_cast<float>(surface.cols);
+}
+
+// Hoehe einer Label-Zeile in Welteinheiten (entlang uAxis).
+inline float LabelCellHeight(const TableSurface& surface) {
+    int pairs = surface.rows / 2;
+    float totalWeight = static_cast<float>(pairs) * RowPairWeight;
+    return Vector3Length(surface.uAxis) * (LabelRowWeight / totalWeight);
+}
+
+// Kantenlaenge einer Button-Zelle in Welteinheiten. Es wird die kleinere der beiden Kanten
+// genommen, damit ein darauf skaliertes Modell garantiert in beide Richtungen in die Zelle
+// passt.
+inline float ButtonCellSize(const TableSurface& surface) {
+    int pairs = surface.rows / 2;
+    float totalWeight = static_cast<float>(pairs) * RowPairWeight;
+    float uCell = Vector3Length(surface.uAxis) * (ButtonRowWeight / totalWeight);
+    return fminf(uCell, CellWidth(surface));
 }
 
 // Weltposition der Zellmitte (row, col) auf der gegebenen Pultflaeche.
 inline Vector3 GridCellCenter(const TableSurface& surface, int row, int col) {
-    float tu = (static_cast<float>(row) + 0.5f) / static_cast<float>(surface.rows);
+    float tuStart = RowBoundaryFraction(surface, row);
+    float tuEnd = RowBoundaryFraction(surface, row + 1);
+    float tu = (tuStart + tuEnd) * 0.5f;
     float tv = (static_cast<float>(col) + 0.5f) / static_cast<float>(surface.cols);
     return Vector3Add(surface.origin,
         Vector3Add(Vector3Scale(surface.uAxis, tu), Vector3Scale(surface.vAxis, tv)));
 }
+
+// Darstellung der Gruppen-Textfelder (siehe PlacementSystem): der Text wird einmalig beim
+// Laden auf eine Textur gerendert und dann als flaches Quad IN der Label-Zeile gezeichnet -
+// liegt also genau wie die Button-Modelle schraeg auf der geneigten Pultflaeche, statt immer
+// gerade auf dem Bildschirm zu stehen.
+constexpr int LabelFontSizePx = 40; // Render-Aufloesung der Text-Textur in Pixeln
+constexpr int LabelTexturePadding = 6;
+constexpr int LabelBoldRadius = 2; // "Fake Bold": Text wird (2*r+1)^2-fach mit Versatz gezeichnet
+constexpr float LabelCellFillRatio = 0.9f; // Text nutzt max. 90% der Label-Zelle, Rest Rand
+constexpr float LabelSurfaceOffset = 0.015f; // Abstand von der Tischflaeche (gegen Z-Fighting)
+constexpr Color LabelTextColor = { 20, 20, 20, 255 };
 
 // Kreis, der der Maus (der "Hand" des Spielers) live auf der getroffenen Tischflaeche folgt.
 constexpr float TableCursorRadius = 0.08f;
