@@ -27,6 +27,15 @@
 //   dem Grid, in Grad um seine eigene Hochachse, bevor es auf die Flaeche gekippt wird.
 // - "button.height" (Default 0) ist optional ein Abstand von der Tischflaeche entlang deren
 //   Normale.
+//
+// Optional koennen mehrere nebeneinanderliegende Gruppen per "frames" zu einem Block
+// zusammengefasst werden, der einen Rahmen aussen herum bekommt (Button- und Label-Zeile
+// eingeschlossen):
+//   "frames": [ { "buttons": ["pumpe1_schluessel", "pumpe2_schluessel"] } ]
+// Referenziert werden die "button.name"-Werte der jeweiligen Gruppen - diese muessen also
+// gesetzt sein. Alle referenzierten Buttons einer Frame muessen auf derselben "section"
+// liegen; die umschlossene Flaeche ergibt sich automatisch aus deren minimaler/maximaler
+// Zeile/Spalte.
 class PlacementSystem {
 public:
     PlacementSystem() = default;
@@ -70,15 +79,27 @@ private:
         Vector3 corners[4];
     };
 
+    // Rahmen um eine Gruppe von Buttons (siehe "frames" in der JSON): reine Aussenlinie, kein
+    // gefuelltes Quad, daher nur die vier Eckpunkte (Zeichenreihenfolge wie LabelPlacement).
+    struct FramePlacement {
+        Vector3 corners[4];
+    };
+
     LoadedModel& GetOrLoadModel(const std::string& path, Shader shader);
 
     // Rendert `text` auf eine Textur und berechnet die vier Eckpunkte des Quads, mittig in der
     // Label-Zeile (row, col) auf `surface`, seitenverhaeltnis-treu eingepasst (kein Verzerren).
     static LabelPlacement BuildLabel(const GameConfig::TableSurface& surface, int row, int col, const std::string& text);
 
+    // Berechnet die vier Eckpunkte eines Rahmens auf `surface`, der den Bruchteils-Bereich
+    // [tuStart,tuEnd] x [tvStart,tvEnd] umschliesst (gleiche tu/tv-Konvention wie
+    // GameConfig::RowBoundaryFraction).
+    static FramePlacement BuildFrame(const GameConfig::TableSurface& surface, float tuStart, float tuEnd, float tvStart, float tvEnd);
+
     // unordered_map: Referenzen/Pointer auf Elemente bleiben beim Einfuegen weiterer Eintraege
     // gueltig, daher duerfen Placement-Eintraege sicher auf hier gespeicherte LoadedModels zeigen.
     std::unordered_map<std::string, LoadedModel> loadedModels;
     std::vector<Placement> placements;
     std::vector<LabelPlacement> labelPlacements;
+    std::vector<FramePlacement> framePlacements;
 };

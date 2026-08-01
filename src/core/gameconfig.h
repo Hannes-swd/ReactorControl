@@ -182,4 +182,8 @@ constexpr float TableCursorRadius = 0.08f;
 constexpr float TableCursorSurfaceOffset = 0.01f;
 constexpr int TableCursorSegments = 24;
 
+// Rahmen um gruppierte Buttons (siehe PlacementSystem, "frames" in der JSON).
+constexpr float FrameSurfaceOffset = 0.02f;
+constexpr Color FrameColor = YELLOW;
+
 } // namespace GameConfig

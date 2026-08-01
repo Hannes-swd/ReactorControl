@@ -7,7 +7,9 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <climits>
 #include <fstream>
+#include <optional>
 
 using nlohmann::json;
 
@@ -81,6 +83,23 @@ PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
     return label;
 }
 
+PlacementSystem::FramePlacement PlacementSystem::BuildFrame(
+    const GameConfig::TableSurface& surface, float tuStart, float tuEnd, float tvStart, float tvEnd) {
+    Vector3 normal = GameConfig::SurfaceNormal(surface);
+    auto corner = [&](float fu, float fv) {
+        Vector3 onSurface = Vector3Add(surface.origin,
+            Vector3Add(Vector3Scale(surface.uAxis, fu), Vector3Scale(surface.vAxis, fv)));
+        return Vector3Add(onSurface, Vector3Scale(normal, GameConfig::FrameSurfaceOffset));
+    };
+
+    FramePlacement frame{};
+    frame.corners[0] = corner(tuStart, tvStart);
+    frame.corners[1] = corner(tuStart, tvEnd);
+    frame.corners[2] = corner(tuEnd, tvEnd);
+    frame.corners[3] = corner(tuEnd, tvStart);
+    return frame;
+}
+
 PlacementSystem::~PlacementSystem() {
     for (auto& [path, loaded] : loadedModels) {
         UnloadModel(loaded.model);
@@ -119,6 +138,16 @@ void PlacementSystem::LoadFromJson(const char* jsonPath, Shader shader) {
     if (data.is_discarded() || !data.contains("groups")) {
         return;
     }
+
+    // Merkt sich section/row/col jedes benannten Buttons, damit "frames" (siehe unten) per
+    // button.name darauf verweisen kann, ohne die Grid-Position ein zweites Mal in der JSON
+    // angeben zu muessen.
+    struct ButtonRef {
+        size_t section;
+        int row;
+        int col;
+    };
+    std::unordered_map<std::string, ButtonRef> buttonsByName;
 
     for (const auto& group : data["groups"]) {
         if (!group.contains("text") || !group.contains("button")) {
@@ -166,10 +195,61 @@ void PlacementSystem::LoadFromJson(const char* jsonPath, Shader shader) {
         Matrix rotation = MatrixMultiply(MatrixRotateY(facingDegrees * DEG2RAD), orientation);
 
         std::string name = entry.value("name", std::string());
+        if (!name.empty()) {
+            buttonsByName[name] = ButtonRef{ section, row, col };
+        }
         placements.push_back(Placement{ &loaded, position, scale, rotation, name });
 
         // Textfeld faellt automatisch in die Label-Zeile direkt unter der Button-Zeile.
         labelPlacements.push_back(BuildLabel(surface, row + 1, col, group["text"].get<std::string>()));
+    }
+
+    // "frames": fasst mehrere (per button.name referenzierte) Gruppen, die auf derselben
+    // Flaeche nebeneinander liegen, zu einem Block zusammen und zeichnet einen Rahmen aussen
+    // herum (Button- UND die direkt darunterliegende Label-Zeile eingeschlossen). Alle
+    // referenzierten Buttons muessen existieren und auf derselben section liegen, sonst wird
+    // die Frame uebersprungen.
+    if (data.contains("frames")) {
+        for (const auto& frameEntry : data["frames"]) {
+            if (!frameEntry.contains("buttons")) {
+                continue;
+            }
+
+            std::optional<size_t> frameSection;
+            int rowMin = INT_MAX, rowMax = INT_MIN, colMin = INT_MAX, colMax = INT_MIN;
+            bool valid = true;
+
+            for (const auto& buttonName : frameEntry["buttons"]) {
+                auto it = buttonsByName.find(buttonName.get<std::string>());
+                if (it == buttonsByName.end()) {
+                    valid = false;
+                    break;
+                }
+                if (!frameSection.has_value()) {
+                    frameSection = it->second.section;
+                } else if (*frameSection != it->second.section) {
+                    valid = false;
+                    break;
+                }
+                rowMin = std::min(rowMin, it->second.row);
+                rowMax = std::max(rowMax, it->second.row);
+                colMin = std::min(colMin, it->second.col);
+                colMax = std::max(colMax, it->second.col);
+            }
+            if (!valid || !frameSection.has_value()) {
+                continue;
+            }
+
+            const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[*frameSection];
+            // +2 statt +1, damit die Label-Zeile direkt unter der untersten Button-Zeile mit
+            // eingeschlossen wird.
+            float tuStart = GameConfig::RowBoundaryFraction(surface, rowMin);
+            float tuEnd = GameConfig::RowBoundaryFraction(surface, rowMax + 2);
+            float tvStart = static_cast<float>(colMin) / surface.cols;
+            float tvEnd = static_cast<float>(colMax + 1) / surface.cols;
+
+            framePlacements.push_back(BuildFrame(surface, tuStart, tuEnd, tvStart, tvEnd));
+        }
     }
 }
 
@@ -203,4 +283,11 @@ void PlacementSystem::Draw() const {
         rlEnd();
     }
     rlSetTexture(0);
+
+    for (const auto& frame : framePlacements) {
+        DrawLine3D(frame.corners[0], frame.corners[1], GameConfig::FrameColor);
+        DrawLine3D(frame.corners[1], frame.corners[2], GameConfig::FrameColor);
+        DrawLine3D(frame.corners[2], frame.corners[3], GameConfig::FrameColor);
+        DrawLine3D(frame.corners[3], frame.corners[0], GameConfig::FrameColor);
+    }
 }

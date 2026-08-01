@@ -20,6 +20,10 @@ constexpr float kTwoPi = 6.28318530718f;
 } // namespace
 
 void TableCursor::Update(const Camera3D& camera) {
+    if (IsKeyPressed(KEY_TAB)) {
+        gridVisible = !gridVisible;
+    }
+
     Ray ray = GetScreenToWorldRay(GetMousePosition(), camera);
 
     visible = false;
@@ -59,6 +63,12 @@ void TableCursor::Update(const Camera3D& camera) {
         closestDistance = collision.distance;
         visible = true;
     }
+
+    // Nur Button-Zeilen sind anklickbar (dort landen die 3D-Objekte) - Label-Zeilen sind
+    // reiner Text und sollen keinen Hover zeigen.
+    if (visible && !GameConfig::IsButtonRow(hoverRow)) {
+        visible = false;
+    }
 }
 
 Vector3 TableCursor::CornerPoint(int section, float fu, float fv) const {
@@ -69,18 +79,20 @@ Vector3 TableCursor::CornerPoint(int section, float fu, float fv) const {
 }
 
 void TableCursor::Draw() const {
-    for (size_t s = 0; s < GameConfig::TableSurfaceCount; s++) {
-        const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[s];
-        for (int row = 0; row <= surface.rows; row++) {
-            float fu = GameConfig::RowBoundaryFraction(surface, row);
-            Vector3 from = CornerPoint(static_cast<int>(s), fu, 0.0f);
-            Vector3 to = CornerPoint(static_cast<int>(s), fu, 1.0f);
-            DrawLine3D(from, to, DARKGRAY);
-        }
-        for (int col = 0; col <= surface.cols; col++) {
-            Vector3 from = CornerPoint(static_cast<int>(s), 0.0f, static_cast<float>(col) / surface.cols);
-            Vector3 to = CornerPoint(static_cast<int>(s), 1.0f, static_cast<float>(col) / surface.cols);
-            DrawLine3D(from, to, DARKGRAY);
+    if (gridVisible) {
+        for (size_t s = 0; s < GameConfig::TableSurfaceCount; s++) {
+            const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[s];
+            for (int row = 0; row <= surface.rows; row++) {
+                float fu = GameConfig::RowBoundaryFraction(surface, row);
+                Vector3 from = CornerPoint(static_cast<int>(s), fu, 0.0f);
+                Vector3 to = CornerPoint(static_cast<int>(s), fu, 1.0f);
+                DrawLine3D(from, to, DARKGRAY);
+            }
+            for (int col = 0; col <= surface.cols; col++) {
+                Vector3 from = CornerPoint(static_cast<int>(s), 0.0f, static_cast<float>(col) / surface.cols);
+                Vector3 to = CornerPoint(static_cast<int>(s), 1.0f, static_cast<float>(col) / surface.cols);
+                DrawLine3D(from, to, DARKGRAY);
+            }
         }
     }
 
