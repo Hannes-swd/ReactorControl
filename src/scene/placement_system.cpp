@@ -34,6 +34,12 @@ float RotatedMinAlongAxis(const BoundingBox& bounds, const Matrix& orientation, 
     return minProjection;
 }
 
+// Kodiert eine Button-Zelle als einzelnen Schluessel fuer elementsByCell. row/col bleiben
+// laut GameConfig::TableSurfaces deutlich unter 1000, section unter 1000000/1000.
+long long CellKey(int section, int row, int col) {
+    return static_cast<long long>(section) * 1000000 + static_cast<long long>(row) * 1000 + col;
+}
+
 } // namespace
 
 // "right" (Bildschirmrichtung des Textes) liegt entlang -vAxis, weil die Spalten (cols) die
@@ -128,90 +134,163 @@ PlacementSystem::LoadedModel& PlacementSystem::GetOrLoadModel(const std::string&
     return loadedModels.emplace(path, LoadedModel{ model, autoScale, bounds }).first->second;
 }
 
-void PlacementSystem::LoadFromJson(const char* jsonPath, Shader shader) {
-    if (!FileExists(jsonPath)) {
+void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
+    if (!DirectoryExists(dirPath)) {
         return;
     }
 
-    std::ifstream file(jsonPath);
-    json data = json::parse(file, nullptr, false);
-    if (data.is_discarded() || !data.contains("groups")) {
-        return;
+    // Alle *.json-Dateien direkt im Ordner einmalig einlesen und parsen (nicht rekursiv,
+    // ungueltige/leere Dateien werden verworfen), damit die drei Durchgaenge unten beliebig
+    // ueber Dateigrenzen hinweg aufeinander verweisen koennen (z.B. ein Element in
+    // rechts.json, dessen Typ in types.json steht, referenziert von einem Frame in
+    // rechts.json) - Lesereihenfolge der Dateien spielt dafuer keine Rolle.
+    std::vector<json> files;
+    FilePathList filePaths = LoadDirectoryFilesEx(dirPath, ".json", false);
+    for (unsigned int i = 0; i < filePaths.count; i++) {
+        std::ifstream file(filePaths.paths[i]);
+        json data = json::parse(file, nullptr, false);
+        if (!data.is_discarded()) {
+            files.push_back(std::move(data));
+        }
+    }
+    UnloadDirectoryFiles(filePaths);
+
+    // Durchgang 1: "types" aus allen Dateien. Ein Typ landet nur dann in modelsByType
+    // (Render-Seite) UND in der Registry (Logik-Seite), wenn ALLE seine Zustaende ein
+    // existierendes Modell haben - sonst wuerde ein spaeterer Klick auf einen unvollstaendig
+    // geladenen Zustand zeigen. Elemente, die auf einen uebersprungenen Typ verweisen, werden
+    // in Durchgang 2 ebenfalls uebersprungen.
+    for (const auto& data : files) {
+        if (!data.contains("types")) {
+            continue;
+        }
+        for (const auto& typeEntry : data["types"]) {
+            if (!typeEntry.contains("id") || !typeEntry.contains("states") || !typeEntry.contains("models")) {
+                continue;
+            }
+
+            std::string typeId = typeEntry["id"].get<std::string>();
+            std::vector<std::string> states = typeEntry["states"].get<std::vector<std::string>>();
+            if (states.empty()) {
+                continue;
+            }
+
+            const auto& modelsJson = typeEntry["models"];
+            std::vector<LoadedModel*> modelsByState;
+            modelsByState.reserve(states.size());
+            bool allModelsFound = true;
+            for (const std::string& state : states) {
+                if (!modelsJson.contains(state)) {
+                    allModelsFound = false;
+                    break;
+                }
+                std::string modelPath = std::string(GameConfig::ModelsDirectory) + modelsJson[state].get<std::string>();
+                if (!FileExists(modelPath.c_str())) {
+                    allModelsFound = false;
+                    break;
+                }
+                modelsByState.push_back(&GetOrLoadModel(modelPath, shader));
+            }
+            if (!allModelsFound) {
+                continue;
+            }
+
+            registry.RegisterType(typeId, states);
+            modelsByType[typeId] = TypeModels{ std::move(states), std::move(modelsByState) };
+        }
     }
 
-    // Merkt sich section/row/col jedes benannten Buttons, damit "frames" (siehe unten) per
-    // button.name darauf verweisen kann, ohne die Grid-Position ein zweites Mal in der JSON
-    // angeben zu muessen.
-    struct ButtonRef {
+    // Merkt sich section/row/col jedes Elements, damit "frames" (Durchgang 3) per id darauf
+    // verweisen kann, ohne die Grid-Position ein zweites Mal in der JSON angeben zu muessen.
+    // Rein lokal, im Gegensatz zu elementsByCell (Member, fuer Klick-Lookup zur Laufzeit).
+    struct ElementRef {
         size_t section;
         int row;
         int col;
     };
-    std::unordered_map<std::string, ButtonRef> buttonsByName;
+    std::unordered_map<std::string, ElementRef> elementRefs;
 
-    for (const auto& group : data["groups"]) {
-        if (!group.contains("text") || !group.contains("button")) {
+    // Durchgang 2: "elements" aus allen Dateien.
+    for (const auto& data : files) {
+        if (!data.contains("elements")) {
             continue;
         }
+        for (const auto& group : data["elements"]) {
+            if (!group.contains("id") || !group.contains("type") || !group.contains("text") ||
+                !group.contains("section") || !group.contains("row") || !group.contains("col")) {
+                continue;
+            }
 
-        const auto& entry = group["button"];
-        if (!entry.contains("model") || !entry.contains("section") || !entry.contains("row") ||
-            !entry.contains("col")) {
-            continue;
+            std::string id = group["id"].get<std::string>();
+            std::string typeId = group["type"].get<std::string>();
+            auto typeIt = modelsByType.find(typeId);
+            if (typeIt == modelsByType.end()) {
+                continue; // Typ existiert nicht oder wurde oben wegen fehlender Modelle uebersprungen
+            }
+            const TypeModels& typeModels = typeIt->second;
+
+            size_t section = group["section"].get<size_t>();
+            if (section >= GameConfig::TableSurfaceCount) {
+                continue;
+            }
+
+            // Start-Zustand: per Name aus "state" (Default: erster Zustand des Typs).
+            std::string initialStateName = group.value("state", typeModels.states.front());
+            auto stateIt = std::find(typeModels.states.begin(), typeModels.states.end(), initialStateName);
+            int initialStateIndex = (stateIt != typeModels.states.end())
+                ? static_cast<int>(std::distance(typeModels.states.begin(), stateIt))
+                : 0;
+
+            const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[section];
+            Vector3 normal = GameConfig::SurfaceNormal(surface);
+            Matrix orientation = GameConfig::SurfaceOrientation(surface);
+
+            // Skalierung/Boden-Ausgleich werden einmalig anhand des Start-Zustand-Modells
+            // berechnet und fuer alle Zustaende dieser Instanz beibehalten - setzt voraus, dass
+            // alle Modelle eines Typs (z.B. die Farbvarianten eines Tasters) aehnlich grosse
+            // Rohabmessungen haben. Bei sehr unterschiedlich grossen Zustandsmodellen muesste das
+            // stattdessen pro Zustand in Draw() neu berechnet werden.
+            const LoadedModel& initialModel = *typeModels.modelsByState[initialStateIndex];
+
+            // autoScale bringt die groesste Rohabmessung auf 1 Einheit, ButtonCellSize dann auf
+            // die tatsaechliche Zellenkante. scale=1.0 fuellt damit genau ein Kaestchen.
+            float scale = group.value("scale", 1.0f) * initialModel.autoScale * GameConfig::ButtonCellSize(surface);
+
+            // Offset entlang der Flaechen-Normalen, damit der tiefste Punkt des ausgerichteten
+            // Modells exakt auf der Tischflaeche aufsteht (statt auf world-Y = 0, was bei
+            // geneigten/verdrehten Flaechen daneben laege).
+            float groundOffset = -RotatedMinAlongAxis(initialModel.bounds, orientation, normal) * scale;
+            float height = group.value("height", 0.0f) + groundOffset;
+
+            int row = group["row"].get<int>();
+            int col = group["col"].get<int>();
+            Vector3 cellCenter = GameConfig::GridCellCenter(surface, row, col);
+            Vector3 position = Vector3Add(cellCenter, Vector3Scale(normal, height));
+
+            float facingDegrees = group.value("rotation", 0.0f);
+            Matrix rotation = MatrixMultiply(MatrixRotateY(facingDegrees * DEG2RAD), orientation);
+
+            registry.RegisterInstance(id, typeId, initialStateIndex);
+            elementRefs[id] = ElementRef{ section, row, col };
+            elementsByCell[CellKey(static_cast<int>(section), row, col)] = id;
+            placements.push_back(Placement{ id, typeId, position, scale, rotation });
+
+            // Textfeld faellt automatisch in die Label-Zeile direkt unter der Button-Zeile.
+            labelPlacements.push_back(BuildLabel(surface, row + 1, col, group["text"].get<std::string>()));
         }
-
-        size_t section = entry["section"].get<size_t>();
-        if (section >= GameConfig::TableSurfaceCount) {
-            continue;
-        }
-
-        std::string modelPath = std::string(GameConfig::ModelsDirectory) + entry["model"].get<std::string>();
-        if (!FileExists(modelPath.c_str())) {
-            continue;
-        }
-
-        LoadedModel& loaded = GetOrLoadModel(modelPath, shader);
-
-        const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[section];
-        Vector3 normal = GameConfig::SurfaceNormal(surface);
-        Matrix orientation = GameConfig::SurfaceOrientation(surface);
-
-        // autoScale bringt die groesste Rohabmessung auf 1 Einheit, ButtonCellSize dann auf
-        // die tatsaechliche Zellenkante. scale=1.0 fuellt damit genau ein Kaestchen.
-        float scale = entry.value("scale", 1.0f) * loaded.autoScale * GameConfig::ButtonCellSize(surface);
-
-        // Offset entlang der Flaechen-Normalen, damit der tiefste Punkt des ausgerichteten
-        // Modells exakt auf der Tischflaeche aufsteht (statt auf world-Y = 0, was bei
-        // geneigten/verdrehten Flaechen daneben laege).
-        float groundOffset = -RotatedMinAlongAxis(loaded.bounds, orientation, normal) * scale;
-        float height = entry.value("height", 0.0f) + groundOffset;
-
-        int row = entry["row"].get<int>();
-        int col = entry["col"].get<int>();
-        Vector3 cellCenter = GameConfig::GridCellCenter(surface, row, col);
-        Vector3 position = Vector3Add(cellCenter, Vector3Scale(normal, height));
-
-        float facingDegrees = entry.value("rotation", 0.0f);
-        Matrix rotation = MatrixMultiply(MatrixRotateY(facingDegrees * DEG2RAD), orientation);
-
-        std::string name = entry.value("name", std::string());
-        if (!name.empty()) {
-            buttonsByName[name] = ButtonRef{ section, row, col };
-        }
-        placements.push_back(Placement{ &loaded, position, scale, rotation, name });
-
-        // Textfeld faellt automatisch in die Label-Zeile direkt unter der Button-Zeile.
-        labelPlacements.push_back(BuildLabel(surface, row + 1, col, group["text"].get<std::string>()));
     }
 
-    // "frames": fasst mehrere (per button.name referenzierte) Gruppen, die auf derselben
-    // Flaeche nebeneinander liegen, zu einem Block zusammen und zeichnet einen Rahmen aussen
-    // herum (Button- UND die direkt darunterliegende Label-Zeile eingeschlossen). Alle
-    // referenzierten Buttons muessen existieren und auf derselben section liegen, sonst wird
-    // die Frame uebersprungen.
-    if (data.contains("frames")) {
+    // Durchgang 3: "frames" aus allen Dateien - fasst mehrere (per id referenzierte)
+    // Elemente, die auf derselben Flaeche nebeneinander liegen, zu einem Block zusammen und
+    // zeichnet einen Rahmen aussen herum (Button- UND die direkt darunterliegende Label-Zeile
+    // eingeschlossen). Alle referenzierten Elemente muessen existieren und auf derselben
+    // section liegen, sonst wird die Frame uebersprungen.
+    for (const auto& data : files) {
+        if (!data.contains("frames")) {
+            continue;
+        }
         for (const auto& frameEntry : data["frames"]) {
-            if (!frameEntry.contains("buttons")) {
+            if (!frameEntry.contains("elements")) {
                 continue;
             }
 
@@ -219,9 +298,9 @@ void PlacementSystem::LoadFromJson(const char* jsonPath, Shader shader) {
             int rowMin = INT_MAX, rowMax = INT_MIN, colMin = INT_MAX, colMax = INT_MIN;
             bool valid = true;
 
-            for (const auto& buttonName : frameEntry["buttons"]) {
-                auto it = buttonsByName.find(buttonName.get<std::string>());
-                if (it == buttonsByName.end()) {
+            for (const auto& elementId : frameEntry["elements"]) {
+                auto it = elementRefs.find(elementId.get<std::string>());
+                if (it == elementRefs.end()) {
                     valid = false;
                     break;
                 }
@@ -251,11 +330,42 @@ void PlacementSystem::LoadFromJson(const char* jsonPath, Shader shader) {
             framePlacements.push_back(BuildFrame(surface, tuStart, tuEnd, tvStart, tvEnd));
         }
     }
+
+    // Durchgang 4: "triggers" aus allen Dateien - reine Weiterleitung an die Registry (siehe
+    // ElementRegistry::RegisterTrigger), PlacementSystem wertet sie selbst nicht aus.
+    for (const auto& data : files) {
+        if (!data.contains("triggers")) {
+            continue;
+        }
+        for (const auto& triggerEntry : data["triggers"]) {
+            if (!triggerEntry.contains("on") || !triggerEntry.contains("set")) {
+                continue;
+            }
+            std::string onId = triggerEntry["on"].get<std::string>();
+            for (const auto& [targetId, targetState] : triggerEntry["set"].items()) {
+                registry.RegisterTrigger(onId, targetId, targetState.get<std::string>());
+            }
+        }
+    }
+}
+
+std::optional<std::string> PlacementSystem::FindElementAt(int section, int row, int col) const {
+    auto it = elementsByCell.find(CellKey(section, row, col));
+    if (it == elementsByCell.end()) {
+        return std::nullopt;
+    }
+    return it->second;
 }
 
 void PlacementSystem::Draw() const {
     for (const auto& placement : placements) {
-        Model model = placement.loadedModel->model; // Kopie: transform-Aenderung bleibt lokal fuer diesen Draw-Call
+        const TypeModels& typeModels = modelsByType.at(placement.typeId);
+        int stateIndex = registry.GetStateIndex(placement.id);
+        if (stateIndex < 0 || static_cast<size_t>(stateIndex) >= typeModels.modelsByState.size()) {
+            continue;
+        }
+
+        Model model = typeModels.modelsByState[stateIndex]->model; // Kopie: transform-Aenderung bleibt lokal fuer diesen Draw-Call
         model.transform = MatrixMultiply(
             MatrixScale(placement.scale, placement.scale, placement.scale), placement.rotation);
         DrawModel(model, placement.position, 1.0f, WHITE);

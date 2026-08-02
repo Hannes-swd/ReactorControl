@@ -1,0 +1,12 @@
+{
+    "elements": [
+        {
+            "id": "pumpe1_schluessel",
+            "type": "schluessel_1",
+            "section": 1,
+            "row": 2,
+            "col": 10,
+            "text": "P 1"
+        }
+    ]
+}

@@ -19,6 +19,7 @@ add_executable(reactor_control
     src/ui/renderer.cpp
     src/ui/table_cursor.cpp
     src/scene/placement_system.cpp
+    src/scene/element_registry.cpp
 )
 
 target_link_libraries(reactor_control PRIVATE raylib)

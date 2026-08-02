@@ -1,0 +1,15 @@
+{
+    "types": [
+        { "id": "schluessel_1", "states": ["aus"], "models": { "aus": "schluessel.glb" } },
+        {
+            "id": "lampe_4farben",
+            "states": ["aus", "gruen", "rot", "gelb"],
+            "models": {
+                "aus": "grauer_button.glb",
+                "gruen": "gruener_button.glb",
+                "rot": "roter_button.glb",
+                "gelb": "gelber_button.glb"
+            }
+        }
+    ]
+}

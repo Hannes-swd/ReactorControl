@@ -1,0 +1,26 @@
+{
+    "elements": [
+        {
+            "id": "notaus_taste",
+            "type": "schluessel_1",
+            "section": 0,
+            "row": 6,
+            "col": 20,
+            "text": "N1"
+        },
+        {
+            "id": "lampe_1",
+            "type": "lampe_4farben",
+            "section": 0,
+            "row": 6,
+            "col": 21,
+            "text": "L1"
+        }
+    ],
+    "frames": [
+        { "elements": ["notaus_taste", "lampe_1"] }
+    ],
+    "triggers": [
+        { "on": "notaus_taste", "set": { "lampe_1": "aus" } }
+    ]
+}

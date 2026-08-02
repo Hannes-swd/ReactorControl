@@ -1,5 +1,7 @@
 #include "raylib.h"
 
+#include <string>
+
 #define RLIGHTS_IMPLEMENTATION
 #include "core/enums.h"
 #include "core/gameconfig.h"
@@ -32,7 +34,7 @@ int main() {
     TableCursor tableCursor;
 
     PlacementSystem placementSystem;
-    placementSystem.LoadFromJson(GameConfig::PlacementsJsonPath, sceneRenderer.GetLightShader());
+    placementSystem.LoadFromDirectory(GameConfig::PlacementsDirectory, sceneRenderer.GetLightShader());
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_ESCAPE)) {
@@ -42,6 +44,19 @@ int main() {
         cameraController.HandleInput();
         sceneRenderer.UpdateShaderCameraPosition(cameraController.GetCamera().position);
         tableCursor.Update(cameraController.GetCamera());
+
+        // Klick-Erkennung: jeden Frame neu ermitteln (nicht nur bei tatsaechlichem Klick),
+        // damit ElementRegistry::WasClicked() zuverlaessig nach genau einem Frame wieder
+        // false liefert - siehe element_registry.h.
+        std::string clickedElementId;
+        if (tableCursor.IsVisible() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            auto elementId = placementSystem.FindElementAt(
+                tableCursor.HoverSection(), tableCursor.HoverRow(), tableCursor.HoverCol());
+            if (elementId.has_value()) {
+                clickedElementId = *elementId;
+            }
+        }
+        placementSystem.GetRegistry().SetFrameClick(clickedElementId);
 
         BeginDrawing();
         ClearBackground(RAYWHITE);

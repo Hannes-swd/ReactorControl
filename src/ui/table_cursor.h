@@ -12,6 +12,13 @@ public:
     void Update(const Camera3D& camera);
     void Draw() const;
 
+    // Fuer Klick-Erkennung ausserhalb der Klasse (siehe main.cpp): ob und welche Button-Zelle
+    // diesen Frame gehovert wird. Nur gueltig, wenn IsVisible() true ist.
+    bool IsVisible() const { return visible; }
+    int HoverSection() const { return hoverSection; }
+    int HoverRow() const { return hoverRow; }
+    int HoverCol() const { return hoverCol; }
+
 private:
     Vector3 CornerPoint(int section, float fu, float fv) const;
 
