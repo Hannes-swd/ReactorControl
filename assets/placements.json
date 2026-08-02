@@ -6,7 +6,7 @@
         },
         {
             "text": "X 1",
-            "button": { "name": "gruener_button", "model": "gruener_button.glb", "section": 0, "row": 6, "col": 21 }
+            "button": { "name": "Test_Button", "model": "gruener_button.glb", "section": 0, "row": 6, "col": 21 }
         },
         {
             "text": "P 1",
@@ -18,6 +18,6 @@
         }
     ],
     "frames": [
-        { "buttons": ["notaus_taste", "gruener_button"] }
+        { "buttons": ["notaus_taste", "Test_Button"] }
     ]
 }

@@ -21,7 +21,7 @@ constexpr float kTwoPi = 6.28318530718f;
 
 void TableCursor::Update(const Camera3D& camera) {
     if (IsKeyPressed(KEY_TAB)) {
-        gridVisible = !gridVisible;
+        debugMode = !debugMode;
     }
 
     Ray ray = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -79,7 +79,7 @@ Vector3 TableCursor::CornerPoint(int section, float fu, float fv) const {
 }
 
 void TableCursor::Draw() const {
-    if (gridVisible) {
+    if (debugMode) {
         for (size_t s = 0; s < GameConfig::TableSurfaceCount; s++) {
             const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[s];
             for (int row = 0; row <= surface.rows; row++) {
@@ -118,6 +118,9 @@ void TableCursor::Draw() const {
     Vector3 bitangent = Vector3CrossProduct(normal, tangent);
 
     for (int i = 0; i < GameConfig::TableCursorSegments; i++) {
+        if (!debugMode)
+            return;
+
         float a0 = kTwoPi * static_cast<float>(i) / GameConfig::TableCursorSegments;
         float a1 = kTwoPi * static_cast<float>(i + 1) / GameConfig::TableCursorSegments;
 

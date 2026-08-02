@@ -16,7 +16,7 @@ private:
     Vector3 CornerPoint(int section, float fu, float fv) const;
 
     bool visible = false;
-    bool gridVisible = true;
+    bool debugMode = true;
     int hoverSection = -1;
     int hoverRow = -1;
     int hoverCol = -1;
