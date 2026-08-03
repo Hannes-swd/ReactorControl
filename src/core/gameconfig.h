@@ -40,6 +40,10 @@ constexpr const char* LightingShaderFsPath = "assets/shaders/glsl330/lighting.fs
 constexpr const char* PlacementsDirectory = "assets/placements/";
 constexpr const char* ModelsDirectory = "assets/models/";
 
+// Ordner mit den Lua-Skripten, die die Reaktor-/Button-Logik enthalten (siehe ScriptSystem).
+// Beliebig viele Dateien, werden alle geladen und beim Speichern automatisch neu geladen.
+constexpr const char* ScriptsDirectory = "assets/scripts/";
+
 constexpr Vector3 LightPosition = { 6.0f, 8.0f, 6.0f };
 constexpr float AmbientColor[4] = { 0.25f, 0.25f, 0.25f, 1.0f };
 

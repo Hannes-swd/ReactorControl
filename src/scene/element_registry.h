@@ -41,6 +41,17 @@ public:
     int GetStateIndex(const std::string& id) const;
     const std::string& GetStateName(const std::string& id) const;
 
+    // true, wenn `id` per RegisterInstance angelegt wurde. Wird vom Skriptsystem gebraucht,
+    // um zu entscheiden, ob ein im Skript benutzter Name ueberhaupt ein Element ist.
+    bool Exists(const std::string& id) const;
+
+    // Alle registrierten Element-ids (unsortiert). Fuer Uebersichts-/Debugausgaben und
+    // die Skript-Funktion elements().
+    std::vector<std::string> AllIds() const;
+
+    // Geordnete Zustandsliste des Typs, den `id` hat - leer, falls id unbekannt.
+    const std::vector<std::string>& StateNames(const std::string& id) const;
+
     void SetState(const std::string& id, int stateIndex);
     void SetState(const std::string& id, const std::string& stateName);
 
@@ -58,6 +69,11 @@ public:
     // true genau in dem Frame, in dem SetFrameClick(id) zuletzt mit dieser id aufgerufen wurde.
     bool WasClicked(const std::string& id) const;
 
+    // id des zuletzt per SetFrameClick gemeldeten Klicks ("" falls keiner). Fuer Systeme, die
+    // nicht nach einer bestimmten id fragen, sondern wissen wollen OB ueberhaupt geklickt
+    // wurde (z.B. das Skriptsystem, das daraufhin den passenden onclick-Handler sucht).
+    const std::string& FrameClickedId() const { return frameClickedId; }
+
     // Anzahl Zustaende des Typs, den `id` hat. 0 falls id unbekannt.
     size_t StateCount(const std::string& id) const;
 
@@ -68,6 +84,7 @@ private:
     };
 
     static const std::string kEmptyState;
+    static const std::vector<std::string> kEmptyStates;
 
     std::unordered_map<std::string, std::vector<std::string>> stateNamesByType;
     std::unordered_map<std::string, Instance> instances;

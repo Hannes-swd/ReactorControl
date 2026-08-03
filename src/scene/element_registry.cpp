@@ -1,6 +1,7 @@
 #include "element_registry.h"
 
 const std::string ElementRegistry::kEmptyState;
+const std::vector<std::string> ElementRegistry::kEmptyStates;
 
 void ElementRegistry::RegisterType(const std::string& typeId, std::vector<std::string> states) {
     if (states.empty()) {
@@ -28,6 +29,24 @@ const std::string& ElementRegistry::GetStateName(const std::string& id) const {
     }
     const std::vector<std::string>& states = stateNamesByType.at(it->second.typeId);
     return states[it->second.stateIndex];
+}
+
+bool ElementRegistry::Exists(const std::string& id) const {
+    return instances.find(id) != instances.end();
+}
+
+std::vector<std::string> ElementRegistry::AllIds() const {
+    std::vector<std::string> ids;
+    ids.reserve(instances.size());
+    for (const auto& [id, instance] : instances) {
+        ids.push_back(id);
+    }
+    return ids;
+}
+
+const std::vector<std::string>& ElementRegistry::StateNames(const std::string& id) const {
+    auto it = instances.find(id);
+    return it != instances.end() ? stateNamesByType.at(it->second.typeId) : kEmptyStates;
 }
 
 void ElementRegistry::SetState(const std::string& id, int stateIndex) {

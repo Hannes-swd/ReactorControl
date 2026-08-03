@@ -6,6 +6,7 @@
 #include "core/enums.h"
 #include "core/gameconfig.h"
 #include "scene/placement_system.h"
+#include "script/script_system.h"
 #include "ui/camera_controller.h"
 #include "ui/renderer.h"
 #include "ui/table_cursor.h"
@@ -36,6 +37,11 @@ int main() {
     PlacementSystem placementSystem;
     placementSystem.LoadFromDirectory(GameConfig::PlacementsDirectory, sceneRenderer.GetLightShader());
 
+    // Spiellogik liegt in Lua-Skripten (assets/scripts/*.lua) und wird zur Laufzeit beim
+    // Speichern automatisch neu geladen - siehe script_system.h.
+    ScriptSystem scriptSystem;
+    scriptSystem.Load(GameConfig::ScriptsDirectory, placementSystem.GetRegistry());
+
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_ESCAPE)) {
             break;
@@ -58,6 +64,10 @@ int main() {
         }
         placementSystem.GetRegistry().SetFrameClick(clickedElementId);
 
+        // Nach SetFrameClick, damit die Skripte den Klick dieses Frames sehen (und den bereits
+        // von der Registry ausgefuehrten Zustandswechsel/Trigger noch ueberschreiben koennen).
+        scriptSystem.Update(GetFrameTime());
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
@@ -69,6 +79,11 @@ int main() {
 
         if (!sceneRenderer.HasConsoleModel()) {
             DrawText("Kein Modell gefunden: assets/Desk.obj", 10, 40, 20, GRAY);
+        }
+        // Skriptfehler direkt im Fenster anzeigen, damit man beim Schreiben der Logik nicht in
+        // der Konsole nachsehen muss - nach dem Speichern der korrigierten Datei ist sie weg.
+        if (!scriptSystem.LastError().empty()) {
+            DrawText(scriptSystem.LastError().c_str(), 10, GetScreenHeight() - 30, 18, RED);
         }
         DrawFPS(10, 10);
 

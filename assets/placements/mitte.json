@@ -19,8 +19,5 @@
     ],
     "frames": [
         { "elements": ["notaus_taste", "lampe_1"] }
-    ],
-    "triggers": [
-        { "on": "notaus_taste", "set": { "lampe_1": "aus" } }
     ]
 }
