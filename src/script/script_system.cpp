@@ -1,5 +1,6 @@
 #include "script_system.h"
 
+#include "../core/gameconfig.h"
 #include "../scene/element_registry.h"
 
 #include "raylib.h"
@@ -245,6 +246,23 @@ int GlobalIndex(lua_State* L) {
     return 1;
 }
 
+// __newindex von _G: faengt genau den Fall ab, in dem eine eigene globale Variable denselben
+// Namen wie ein Element bekommen soll. Eine solche Zuweisung wuerde das Element ab da
+// unerreichbar machen (ein direkt in _G liegender Wert kommt nie mehr bei GlobalIndex an) -
+// darum lieber eine klare Fehlermeldung statt eines stumm kaputten Elements. Jede andere
+// Zuweisung wird ganz normal gespeichert.
+int GlobalNewIndex(lua_State* L) {
+    if (lua_type(L, 2) == LUA_TSTRING) {
+        const char* name = lua_tostring(L, 2);
+        if (Registry(L).Exists(name)) {
+            return luaL_error(L, "'%s' ist bereits der Name eines Elements und kann nicht als eigene "
+                                 "Variable verwendet werden", name);
+        }
+    }
+    lua_rawset(L, 1);
+    return 0;
+}
+
 int LuaGetState(lua_State* L) {
     lua_pushstring(L, Registry(L).GetStateName(ArgId(L, 1)).c_str());
     return 1;
@@ -299,7 +317,10 @@ int LuaLog(lua_State* L) {
 }
 
 // Alle *.lua-Dateien direkt im Ordner (nicht rekursiv), alphabetisch sortiert - damit die
-// Ausfuehrungsreihenfolge bei mehreren Dateien nicht vom Dateisystem abhaengt.
+// Ausfuehrungsreihenfolge bei mehreren Dateien nicht vom Dateisystem abhaengt. Einzige
+// Ausnahme ist die Variablen-Datei (GameConfig::ScriptVariablesFile): sie wird nach vorne
+// gezogen und laeuft immer zuerst, damit die dort gesetzten Werte schon bereitstehen, wenn
+// die uebrigen Skripte ausgefuehrt werden.
 std::vector<std::string> ListScriptPaths(const std::string& dirPath) {
     std::vector<std::string> paths;
     if (dirPath.empty() || !DirectoryExists(dirPath.c_str())) {
@@ -313,6 +334,14 @@ std::vector<std::string> ListScriptPaths(const std::string& dirPath) {
     UnloadDirectoryFiles(filePaths);
 
     std::sort(paths.begin(), paths.end());
+
+    auto variables = std::find_if(paths.begin(), paths.end(), [](const std::string& path) {
+        return std::strcmp(GetFileName(path.c_str()), GameConfig::ScriptVariablesFile) == 0;
+    });
+    if (variables != paths.end()) {
+        std::rotate(paths.begin(), variables, variables + 1);
+    }
+
     return paths;
 }
 
@@ -362,15 +391,6 @@ void ScriptSystem::Reload() {
     lua_newtable(L);
     lua_setfield(L, LUA_REGISTRYINDEX, kProxyCacheKey);
 
-    // _G bekommt ein __index, das unbekannte Namen als Element-ids interpretiert.
-    lua_pushglobaltable(L);
-    lua_newtable(L);
-    lua_pushlightuserdata(L, registry);
-    lua_pushcclosure(L, GlobalIndex, 1);
-    lua_setfield(L, -2, "__index");
-    lua_setmetatable(L, -2);
-    lua_pop(L, 1);
-
     const struct { const char* name; lua_CFunction fn; } functions[] = {
         { "get_state", LuaGetState },
         { "set_state", LuaSetState },
@@ -390,6 +410,22 @@ void ScriptSystem::Reload() {
         lua_pop(L, 1);
         return;
     }
+
+    // _G bekommt ein __index, das unbekannte Namen als Element-ids interpretiert, und ein
+    // __newindex, das eigene Variablen mit Elementnamen abweist (siehe GlobalNewIndex). Beides
+    // wird bewusst erst hier gesetzt, also nachdem die eingebauten Funktionen und der Prelude
+    // ihre Globals angelegt haben: sonst wuerde eine Element-id, die zufaellig "log" oder
+    // "every" heisst, den Fehler von GlobalNewIndex ausserhalb eines pcall ausloesen.
+    lua_pushglobaltable(L);
+    lua_newtable(L);
+    lua_pushlightuserdata(L, registry);
+    lua_pushcclosure(L, GlobalIndex, 1);
+    lua_setfield(L, -2, "__index");
+    lua_pushlightuserdata(L, registry);
+    lua_pushcclosure(L, GlobalNewIndex, 1);
+    lua_setfield(L, -2, "__newindex");
+    lua_setmetatable(L, -2);
+    lua_pop(L, 1);
 
     for (const ScriptFile& file : files) {
         if (luaL_dofile(L, file.path.c_str()) != LUA_OK) {

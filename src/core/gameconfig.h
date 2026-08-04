@@ -44,6 +44,11 @@ constexpr const char* ModelsDirectory = "assets/models/";
 // Beliebig viele Dateien, werden alle geladen und beim Speichern automatisch neu geladen.
 constexpr const char* ScriptsDirectory = "assets/scripts/";
 
+// Datei fuer eigene globale Variablen. Liegt im ScriptsDirectory und wird immer als erste
+// Skriptdatei ausgefuehrt, damit alle anderen Skripte die Variablen von Anfang an kennen
+// (siehe ScriptSystem). Sie muss nicht existieren - dann gibt es einfach keine Vorgaben.
+constexpr const char* ScriptVariablesFile = "variables.lua";
+
 constexpr Vector3 LightPosition = { 6.0f, 8.0f, 6.0f };
 constexpr float AmbientColor[4] = { 0.25f, 0.25f, 0.25f, 1.0f };
 

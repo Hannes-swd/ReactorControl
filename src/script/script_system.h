@@ -30,6 +30,13 @@ class ElementRegistry;
 //       lampe_1.state = "rot"
 //   end
 //
+// Eigene Variablen braucht man ebenfalls nicht anzumelden: eine Zuweisung ohne "local" legt
+// eine globale Variable an, die alle Skriptdateien sehen. Damit sie an einer Stelle
+// beisammenliegen und sicher vor allen anderen Skripten existieren, gibt es dafuer die Datei
+// GameConfig::ScriptVariablesFile im Skriptordner - sie wird immer zuerst ausgefuehrt (siehe
+// ListScriptPaths). Namen, die schon einem Element gehoeren, sind dabei gesperrt und melden
+// einen Fehler, statt das Element zu verdecken (siehe GlobalNewIndex).
+//
 // Zusaetzlich gibt es zwei frei definierbare globale Funktionen und ein paar Helfer:
 //
 //   function start()      -- einmalig direkt nach dem (Neu-)Laden der Skripte
