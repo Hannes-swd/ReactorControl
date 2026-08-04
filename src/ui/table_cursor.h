@@ -5,8 +5,9 @@
 // Zeigt live an, wo die Maus (die "Hand" des Spielers) auf einer der drei geneigten
 // Pult-Oberflaechen steht: das getroffene Gitter-Kaestchen wird eingefaerbt und ein
 // Kreis markiert zusaetzlich den exakten Trefferpunkt, jeden Frame, ganz ohne Klick.
-// Die duennen Referenz-Gitterlinien lassen sich per TAB ein-/ausblenden (Hover-Markierung
-// und Cursor-Kreis bleiben davon unberuehrt).
+// Diese Anzeige ist eine Debug-Hilfe: Gitterlinien, Hover-Markierung und Cursor-Kreis
+// werden gemeinsam per TAB ein-/ausgeblendet. Die Treffererkennung selbst laeuft immer,
+// damit Klicks auch bei ausgeschaltetem Debug-Modus funktionieren.
 class TableCursor {
 public:
     void Update(const Camera3D& camera);

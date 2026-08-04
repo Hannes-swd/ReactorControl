@@ -96,7 +96,9 @@ void TableCursor::Draw() const {
         }
     }
 
-    if (!visible) {
+    // Hover-Markierung und Cursor-Kreis sind reine Debug-Hilfen; die Trefferdaten selbst
+    // (HoverSection/Row/Col) bleiben fuer die Klick-Erkennung immer gueltig.
+    if (!debugMode || !visible) {
         return;
     }
 
@@ -118,9 +120,6 @@ void TableCursor::Draw() const {
     Vector3 bitangent = Vector3CrossProduct(normal, tangent);
 
     for (int i = 0; i < GameConfig::TableCursorSegments; i++) {
-        if (!debugMode)
-            return;
-
         float a0 = kTwoPi * static_cast<float>(i) / GameConfig::TableCursorSegments;
         float a1 = kTwoPi * static_cast<float>(i + 1) / GameConfig::TableCursorSegments;
 
