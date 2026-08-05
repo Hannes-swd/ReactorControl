@@ -68,6 +68,13 @@ int main() {
         // von der Registry ausgefuehrten Zustandswechsel/Trigger noch ueberschreiben koennen).
         scriptSystem.Update(GetFrameTime());
 
+        // Displayinhalte VOR BeginDrawing rendern: sie zeichnen in eigene Renderziele, und
+        // BeginTextureMode darf nicht innerhalb von BeginMode3D stehen. Was auf einem Display zu
+        // sehen ist, entscheidet dessen ondraw-Funktion im Lua-Skript (siehe script_system.h).
+        placementSystem.RenderDisplays([&scriptSystem](const std::string& id, int width, int height) {
+            scriptSystem.DrawDisplay(id, width, height);
+        });
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
 

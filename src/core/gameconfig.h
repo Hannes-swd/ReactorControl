@@ -156,24 +156,52 @@ inline float LabelCellHeight(const TableSurface& surface) {
     return Vector3Length(surface.uAxis) * (LabelRowWeight / totalWeight);
 }
 
-// Kantenlaenge einer Button-Zelle in Welteinheiten. Es wird die kleinere der beiden Kanten
-// genommen, damit ein darauf skaliertes Modell garantiert in beide Richtungen in die Zelle
-// passt.
-inline float ButtonCellSize(const TableSurface& surface) {
+// Ein Element darf mehrere Button-Zellen breit (colSpan) und hoch (rowSpan) sein. Die Hoehe
+// wird dabei in BUTTON-Zeilen gezaehlt, nicht in Rohzeilen: rowSpan=2 belegt die Button-Zeilen
+// row und row+2 und schluckt die dazwischenliegende Label-Zeile row+1 mit. Die Label-Zeile
+// UNTER dem Block gehoert nicht mehr dazu - dort landet das Textfeld des Elements. Als
+// Rohzeilen-Bereich belegt ein Block also [row, LabelRowBelow(row, rowSpan)).
+inline int LabelRowBelow(int row, int rowSpan) { return row + 2 * rowSpan - 1; }
+
+// Ausdehnung eines solchen Blocks entlang uAxis (Zeilenrichtung), in Welteinheiten. rowSpan
+// Zeilenpaare abzueglich der einen Label-Zeile, die unten nicht mehr dazugehoert - haengt
+// deshalb nur von rowSpan ab, nicht davon, in welcher Zeile der Block beginnt.
+inline float ButtonBlockHeight(const TableSurface& surface, int rowSpan) {
     int pairs = surface.rows / 2;
     float totalWeight = static_cast<float>(pairs) * RowPairWeight;
-    float uCell = Vector3Length(surface.uAxis) * (ButtonRowWeight / totalWeight);
-    return fminf(uCell, CellWidth(surface));
+    float weight = static_cast<float>(rowSpan) * RowPairWeight - LabelRowWeight;
+    return Vector3Length(surface.uAxis) * (weight / totalWeight);
 }
 
-// Weltposition der Zellmitte (row, col) auf der gegebenen Pultflaeche.
-inline Vector3 GridCellCenter(const TableSurface& surface, int row, int col) {
+// Ausdehnung entlang vAxis (Spaltenrichtung), in Welteinheiten.
+inline float ButtonBlockWidth(const TableSurface& surface, int colSpan) {
+    return CellWidth(surface) * static_cast<float>(colSpan);
+}
+
+// Kantenlaenge fuer gleichmaessige Skalierung: die kleinere der beiden Blockkanten, damit ein
+// darauf skaliertes Modell garantiert in beide Richtungen in den Block passt (siehe
+// PlacementSystem, "fit" im Typ - "stretch" nutzt stattdessen beide Kanten einzeln).
+inline float ButtonBlockSize(const TableSurface& surface, int colSpan, int rowSpan) {
+    return fminf(ButtonBlockHeight(surface, rowSpan), ButtonBlockWidth(surface, colSpan));
+}
+
+inline float ButtonCellSize(const TableSurface& surface) { return ButtonBlockSize(surface, 1, 1); }
+
+// Weltposition der Mitte eines colSpan x rowSpan grossen Blocks, dessen linke obere Button-Zelle
+// (row, col) ist. row/col sind also immer die Ecke, an der das Element im Grid haengt.
+inline Vector3 GridBlockCenter(const TableSurface& surface, int row, int col, int colSpan, int rowSpan) {
     float tuStart = RowBoundaryFraction(surface, row);
-    float tuEnd = RowBoundaryFraction(surface, row + 1);
+    float tuEnd = RowBoundaryFraction(surface, LabelRowBelow(row, rowSpan));
     float tu = (tuStart + tuEnd) * 0.5f;
-    float tv = (static_cast<float>(col) + 0.5f) / static_cast<float>(surface.cols);
+    float tv = (static_cast<float>(col) + static_cast<float>(colSpan) * 0.5f) / static_cast<float>(surface.cols);
     return Vector3Add(surface.origin,
         Vector3Add(Vector3Scale(surface.uAxis, tu), Vector3Scale(surface.vAxis, tv)));
+}
+
+// Weltposition der Zellmitte (row, col) - Sonderfall einer 1x1 grossen Platzierung. Gilt auch
+// fuer Label-Zeilen, fuer die rowSpan immer 1 ist.
+inline Vector3 GridCellCenter(const TableSurface& surface, int row, int col) {
+    return GridBlockCenter(surface, row, col, 1, 1);
 }
 
 // Darstellung der Gruppen-Textfelder (siehe PlacementSystem): der Text wird einmalig beim
@@ -195,5 +223,31 @@ constexpr int TableCursorSegments = 24;
 // Rahmen um gruppierte Buttons (siehe PlacementSystem, "frames" in der JSON).
 constexpr float FrameSurfaceOffset = 0.02f;
 constexpr Color FrameColor = YELLOW;
+
+// Displays (siehe PlacementSystem, "screen" im Typ): die Bildschirmflaeche wird NICHT in der
+// JSON vermessen, sondern in Blender mitmodelliert - eine eigene Flaeche im .glb, deren
+// Material diese Basisfarbe traegt. raylibs Modell-Lader wirft Mesh- und Materialnamen weg
+// (siehe raylib.h: weder Mesh noch Material haben ein Namensfeld), die Basisfarbe aus dem glTF
+// ueberlebt dagegen - deshalb die Farbe als Markierung statt eines Namens. Pro Typ
+// ueberschreibbar ("marker"), falls das Modell schon eine andere Bildschirmfarbe hat.
+constexpr Color ScreenMarkerColor = { 255, 0, 255, 255 };
+
+// Aufloesung der Display-Textur in Pixeln, falls der Typ nichts anderes angibt. In genau diesen
+// Koordinaten zeichnet auch das Lua-Skript (0,0 = links oben), voellig unabhaengig davon, wo und
+// wie gross die Flaeche in der 3D-Welt liegt.
+constexpr int ScreenDefaultWidth = 256;
+constexpr int ScreenDefaultHeight = 256;
+constexpr Color ScreenClearColor = BLACK;
+
+// Strichstaerke fuer screen.line(). Fest, weil 1px auf einer Displaytextur, die im Spiel stark
+// verkleinert dargestellt wird, praktisch verschwindet.
+constexpr float ScreenLineThickness = 2.0f;
+
+// Sieben-Segment-Anzeige (screen.seg7): Verhaeltnisse relativ zur Ziffernhoehe. Nicht leuchtende
+// Segmente werden schwach mitgezeichnet, wie bei einer echten Anzeige.
+constexpr float SegmentThicknessRatio = 1.0f / 7.0f;
+constexpr float SegmentWidthRatio = 0.55f;
+constexpr float SegmentGapRatio = 1.2f; // Abstand zwischen zwei Ziffern, in Segmentdicken
+constexpr float SegmentOffBrightness = 0.15f;
 
 } // namespace GameConfig

@@ -1,15 +1,14 @@
 {
     "types": [
-        { "id": "schluessel_1", "states": ["aus"], "models": { "aus": "schluessel.glb" } },
+        { "id": "taster_gruen", "states": ["aus"], "models": { "aus": "gruener_button.glb" } },
+        { "id": "taster_rot", "states": ["aus"], "models": { "aus": "roter_button.glb" } },
         {
-            "id": "lampe_4farben",
-            "states": ["aus", "gruen", "rot", "gelb"],
-            "models": {
-                "aus": "grauer_button.glb",
-                "gruen": "gruener_button.glb",
-                "rot": "roter_button.glb",
-                "gelb": "gelber_button.glb"
-            }
+            "id": "display_gross",
+            "states": ["an"],
+            "models": { "an": "display.glb" },
+            "size": { "cols": 4, "rows": 2 },
+            "fit": "stretch",
+            "screen": { "width": 256, "height": 224, "marker": [0, 0, 0] }
         }
     ]
 }

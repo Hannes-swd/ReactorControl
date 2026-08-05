@@ -1,23 +1,28 @@
 {
     "elements": [
         {
-            "id": "notaus_taste",
-            "type": "schluessel_1",
+            "id": "zaehler_anzeige",
+            "type": "display_gross",
+            "section": 0,
+            "row": 2,
+            "col": 18,
+            "text": "ZAEHLER"
+        },
+        {
+            "id": "knopf_hoch",
+            "type": "taster_gruen",
+            "section": 0,
+            "row": 6,
+            "col": 19,
+            "text": "+"
+        },
+        {
+            "id": "knopf_runter",
+            "type": "taster_rot",
             "section": 0,
             "row": 6,
             "col": 20,
-            "text": "N1"
-        },
-        {
-            "id": "lampe_1",
-            "type": "lampe_4farben",
-            "section": 0,
-            "row": 6,
-            "col": 21,
-            "text": "L1"
+            "text": "-"
         }
-    ],
-    "frames": [
-        { "elements": ["notaus_taste", "lampe_1"] }
     ]
 }

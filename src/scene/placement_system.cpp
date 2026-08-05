@@ -40,6 +40,51 @@ long long CellKey(int section, int row, int col) {
     return static_cast<long long>(section) * 1000000 + static_cast<long long>(row) * 1000 + col;
 }
 
+// Alle Button-Zellen, die ein colSpan x rowSpan grosses Element ab (row, col) belegt. Die
+// Label-Zeilen zwischen den Button-Zeilen sind nicht dabei - sie sind ohnehin nicht anklickbar
+// (siehe TableCursor::Update).
+std::vector<std::pair<int, int>> BlockCells(int row, int col, int colSpan, int rowSpan) {
+    std::vector<std::pair<int, int>> cells;
+    cells.reserve(static_cast<size_t>(colSpan) * static_cast<size_t>(rowSpan));
+    for (int r = 0; r < rowSpan; r++) {
+        for (int c = 0; c < colSpan; c++) {
+            cells.emplace_back(row + 2 * r, col + c);
+        }
+    }
+    return cells;
+}
+
+// "size"/"fit"/"screen" eines Typs sind alle optional - fehlt der Eintrag oder hat er den
+// falschen Typ, bleibt der Default stehen, statt dass der Typ wegfaellt.
+int ReadPositiveInt(const json& parent, const char* key, int fallback) {
+    if (!parent.contains(key) || !parent[key].is_number_integer()) {
+        return fallback;
+    }
+    int value = parent[key].get<int>();
+    return value > 0 ? value : fallback;
+}
+
+// Markierungsfarbe eines Bildschirms: [r, g, b] mit Werten 0..255.
+Color ReadMarkerColor(const json& screenJson) {
+    if (!screenJson.contains("marker") || !screenJson["marker"].is_array() ||
+        screenJson["marker"].size() < 3) {
+        return GameConfig::ScreenMarkerColor;
+    }
+    const auto& marker = screenJson["marker"];
+    return Color{
+        static_cast<unsigned char>(std::clamp(marker[0].get<int>(), 0, 255)),
+        static_cast<unsigned char>(std::clamp(marker[1].get<int>(), 0, 255)),
+        static_cast<unsigned char>(std::clamp(marker[2].get<int>(), 0, 255)),
+        255,
+    };
+}
+
+// Der Alphawert bleibt aussen vor: in Blender laesst er sich leicht versehentlich veraendern und
+// sagt ueber die Markierung nichts aus.
+bool SameRGB(Color a, Color b) {
+    return a.r == b.r && a.g == b.g && a.b == b.b;
+}
+
 } // namespace
 
 // "right" (Bildschirmrichtung des Textes) liegt entlang -vAxis, weil die Spalten (cols) die
@@ -48,7 +93,7 @@ long long CellKey(int section, int row, int col) {
 // Text so herum steht, wie ein Spieler ihn vor der geneigten Flaeche stehend liest (per
 // Screenshot-Test ermittelt, siehe Kommentar in PlacementSystem::Draw).
 PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
-    const GameConfig::TableSurface& surface, int row, int col, const std::string& text) {
+    const GameConfig::TableSurface& surface, int row, int col, int colSpan, const std::string& text) {
     int pixelWidth = MeasureText(text.c_str(), GameConfig::LabelFontSizePx) + 2 * GameConfig::LabelTexturePadding;
     int pixelHeight = GameConfig::LabelFontSizePx + 2 * GameConfig::LabelTexturePadding;
 
@@ -65,7 +110,9 @@ PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
     Texture2D texture = LoadTextureFromImage(image);
     UnloadImage(image);
 
-    float maxWidth = GameConfig::CellWidth(surface) * GameConfig::LabelCellFillRatio;
+    // Ein mehrere Spalten breites Element bekommt auch ein entsprechend breiteres Textfeld,
+    // mittig unter dem gesamten Block.
+    float maxWidth = GameConfig::ButtonBlockWidth(surface, colSpan) * GameConfig::LabelCellFillRatio;
     float maxHeight = GameConfig::LabelCellHeight(surface) * GameConfig::LabelCellFillRatio;
     float scale = std::min(maxWidth / static_cast<float>(pixelWidth), maxHeight / static_cast<float>(pixelHeight));
     float halfWidth = static_cast<float>(pixelWidth) * scale * 0.5f;
@@ -74,7 +121,7 @@ PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
     Vector3 right = Vector3Normalize(surface.vAxis);
     Vector3 down = Vector3Negate(Vector3Normalize(surface.uAxis));
     Vector3 normal = GameConfig::SurfaceNormal(surface);
-    Vector3 center = Vector3Add(GameConfig::GridCellCenter(surface, row, col),
+    Vector3 center = Vector3Add(GameConfig::GridBlockCenter(surface, row, col, colSpan, 1),
                                  Vector3Scale(normal, GameConfig::LabelSurfaceOffset));
 
     Vector3 rightOffset = Vector3Scale(right, halfWidth);
@@ -113,6 +160,16 @@ PlacementSystem::~PlacementSystem() {
     for (auto& label : labelPlacements) {
         UnloadTexture(label.texture);
     }
+    for (auto& screen : screens) {
+        UnloadRenderTexture(screen.target);
+    }
+    if (screenMaterialLoaded) {
+        // Die zuletzt eingehaengte Display-Textur gehoert screens und ist oben schon freigegeben -
+        // vor dem Aufraeumen zurueck auf raylibs Standardtextur setzen, damit UnloadMaterial sie
+        // nicht ein zweites Mal freigibt (es laesst genau diese Textur in Ruhe).
+        screenMaterial.maps[MATERIAL_MAP_DIFFUSE].texture.id = rlGetTextureIdDefault();
+        UnloadMaterial(screenMaterial);
+    }
 }
 
 PlacementSystem::LoadedModel& PlacementSystem::GetOrLoadModel(const std::string& path, Shader shader) {
@@ -131,7 +188,69 @@ PlacementSystem::LoadedModel& PlacementSystem::GetOrLoadModel(const std::string&
     float largestDimension = std::max({ size.x, size.y, size.z });
     float autoScale = largestDimension > 0.0001f ? 1.0f / largestDimension : 1.0f;
 
-    return loadedModels.emplace(path, LoadedModel{ model, autoScale, bounds }).first->second;
+    LoadedModel loaded{};
+    loaded.model = model;
+    loaded.autoScale = autoScale;
+    loaded.bounds = bounds;
+    loaded.size = size;
+    return loadedModels.emplace(path, loaded).first->second;
+}
+
+void PlacementSystem::PrepareScreenMesh(LoadedModel& loaded, Color marker) {
+    if (loaded.screenMesh >= 0) {
+        return;
+    }
+
+    const Model& model = loaded.model;
+    for (int i = 0; i < model.meshCount; i++) {
+        int materialIndex = model.meshMaterial[i];
+        if (materialIndex < 0 || materialIndex >= model.materialCount) {
+            continue;
+        }
+        if (!SameRGB(model.materials[materialIndex].maps[MATERIAL_MAP_DIFFUSE].color, marker)) {
+            continue;
+        }
+
+        loaded.screenMesh = i;
+
+        Mesh& mesh = model.meshes[i];
+        if (mesh.texcoords == nullptr) {
+            TraceLog(LOG_WARNING, "PLATZIERUNG: Bildschirmflaeche hat keine Texturkoordinaten - "
+                                  "in Blender fehlt die UV-Map");
+            return;
+        }
+
+        // Die Texturkoordinaten werden hier komplett neu berechnet, statt die aus Blender zu
+        // benutzen. Grund: wie herum eine UV-Map liegt, sieht man dem Modell im Spiel nicht an -
+        // eine um 90 Grad verdrehte Map faellt erst auf, wenn der fertige Displaytext hochkant
+        // steht. Aus der Geometrie ergibt sich die richtige Lage dagegen eindeutig, und zwar
+        // genau nach derselben Regel wie bei den Textfeldern (siehe BuildLabel): quer ueber die
+        // Flaeche laeuft die Spaltenrichtung, von oben nach unten die Zeilenrichtung.
+        //
+        // Nach GameConfig::SurfaceOrientation zeigt die lokale Modellachse X entlang uAxis
+        // (Zeilen, vom Spieler weg) und Z entlang vAxis (Spalten, quer). Also:
+        //   Textur-x (links -> rechts) laeuft entlang +Z
+        //   Textur-y (oben -> unten)   laeuft entlang -X
+        // Der y-Anteil ist dabei bereits umgedreht, weil ein Renderziel im Grafikspeicher
+        // zeilenweise andersherum liegt als eine geladene Bilddatei - ohne das stuende der
+        // Inhalt auf dem Kopf.
+        float minX = FLT_MAX, maxX = -FLT_MAX, minZ = FLT_MAX, maxZ = -FLT_MAX;
+        for (int v = 0; v < mesh.vertexCount; v++) {
+            minX = std::min(minX, mesh.vertices[v * 3 + 0]);
+            maxX = std::max(maxX, mesh.vertices[v * 3 + 0]);
+            minZ = std::min(minZ, mesh.vertices[v * 3 + 2]);
+            maxZ = std::max(maxZ, mesh.vertices[v * 3 + 2]);
+        }
+        float spanX = std::max(maxX - minX, 0.0001f);
+        float spanZ = std::max(maxZ - minZ, 0.0001f);
+
+        for (int v = 0; v < mesh.vertexCount; v++) {
+            mesh.texcoords[v * 2 + 0] = (mesh.vertices[v * 3 + 2] - minZ) / spanZ;
+            mesh.texcoords[v * 2 + 1] = (mesh.vertices[v * 3 + 0] - minX) / spanX;
+        }
+        UpdateMeshBuffer(mesh, 1, mesh.texcoords, mesh.vertexCount * 2 * static_cast<int>(sizeof(float)), 0);
+        return;
+    }
 }
 
 void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
@@ -195,8 +314,45 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
                 continue;
             }
 
+            TypeModels typeModels;
+            typeModels.states = states;
+            typeModels.modelsByState = modelsByState;
+
+            if (typeEntry.contains("size")) {
+                typeModels.colSpan = ReadPositiveInt(typeEntry["size"], "cols", 1);
+                typeModels.rowSpan = ReadPositiveInt(typeEntry["size"], "rows", 1);
+            }
+            typeModels.stretch = typeEntry.value("fit", std::string("uniform")) == "stretch";
+
+            // Bildschirmflaeche in JEDEM Zustandsmodell suchen: eine Anzeige, die zwischen
+            // "an" und "gestoert" umschaltet, hat den Bildschirm in beiden Modellen.
+            if (typeEntry.contains("screen")) {
+                const auto& screenJson = typeEntry["screen"];
+                Color marker = ReadMarkerColor(screenJson);
+                for (LoadedModel* loaded : modelsByState) {
+                    PrepareScreenMesh(*loaded, marker);
+                }
+                typeModels.hasScreen = true;
+                typeModels.screenWidth = ReadPositiveInt(screenJson, "width", GameConfig::ScreenDefaultWidth);
+                typeModels.screenHeight = ReadPositiveInt(screenJson, "height", GameConfig::ScreenDefaultHeight);
+
+                // LoadMaterialDefault liefert raylibs Standardshader - also ohne Beleuchtung,
+                // genau richtig fuer eine leuchtende Anzeige. Erst hier angelegt, damit ein
+                // Projekt ganz ohne Displays gar kein Material dafuer erzeugt.
+                if (!screenMaterialLoaded) {
+                    screenMaterial = LoadMaterialDefault();
+                    screenMaterialLoaded = true;
+                }
+
+                if (modelsByState.front()->screenMesh < 0) {
+                    TraceLog(LOG_WARNING, "PLATZIERUNG: Typ '%s' hat \"screen\", aber im Modell "
+                             "liegt keine Flaeche mit der Markierungsfarbe (%d,%d,%d)",
+                             typeId.c_str(), marker.r, marker.g, marker.b);
+                }
+            }
+
             registry.RegisterType(typeId, states);
-            modelsByType[typeId] = TypeModels{ std::move(states), std::move(modelsByState) };
+            modelsByType[typeId] = std::move(typeModels);
         }
     }
 
@@ -207,6 +363,8 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
         size_t section;
         int row;
         int col;
+        int colSpan;
+        int rowSpan;
     };
     std::unordered_map<std::string, ElementRef> elementRefs;
 
@@ -245,38 +403,90 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
             Vector3 normal = GameConfig::SurfaceNormal(surface);
             Matrix orientation = GameConfig::SurfaceOrientation(surface);
 
+            int row = group["row"].get<int>();
+            int col = group["col"].get<int>();
+            int colSpan = typeModels.colSpan;
+            int rowSpan = typeModels.rowSpan;
+
+            // Ein Element, das auch nur mit einer Zelle auf einem bereits platzierten liegt, wird
+            // ganz uebersprungen: sonst wuerde es die Belegungskarte des anderen teilweise
+            // ueberschreiben und Klicks landeten je nach Zelle beim falschen Element.
+            std::vector<std::pair<int, int>> cells = BlockCells(row, col, colSpan, rowSpan);
+            bool cellsFree = true;
+            for (const auto& [cellRow, cellCol] : cells) {
+                if (elementsByCell.count(CellKey(static_cast<int>(section), cellRow, cellCol)) > 0) {
+                    TraceLog(LOG_WARNING, "PLATZIERUNG: '%s' uebersprungen - Zelle (%d, %d, %d) ist "
+                             "schon von '%s' belegt", id.c_str(), static_cast<int>(section), cellRow, cellCol,
+                             elementsByCell[CellKey(static_cast<int>(section), cellRow, cellCol)].c_str());
+                    cellsFree = false;
+                    break;
+                }
+            }
+            if (!cellsFree) {
+                continue;
+            }
+
             // Skalierung/Boden-Ausgleich werden einmalig anhand des Start-Zustand-Modells
             // berechnet und fuer alle Zustaende dieser Instanz beibehalten - setzt voraus, dass
             // alle Modelle eines Typs (z.B. die Farbvarianten eines Tasters) aehnlich grosse
             // Rohabmessungen haben. Bei sehr unterschiedlich grossen Zustandsmodellen muesste das
             // stattdessen pro Zustand in Draw() neu berechnet werden.
             const LoadedModel& initialModel = *typeModels.modelsByState[initialStateIndex];
+            float userScale = group.value("scale", 1.0f);
 
-            // autoScale bringt die groesste Rohabmessung auf 1 Einheit, ButtonCellSize dann auf
-            // die tatsaechliche Zellenkante. scale=1.0 fuellt damit genau ein Kaestchen.
-            float scale = group.value("scale", 1.0f) * initialModel.autoScale * GameConfig::ButtonCellSize(surface);
+            // Lokales X des Modells zeigt nach der Ausrichtung entlang uAxis (Zeilenrichtung),
+            // lokales Z entlang vAxis (Spaltenrichtung) - siehe GameConfig::SurfaceOrientation.
+            Vector3 scale{};
+            if (typeModels.stretch) {
+                // Beide Kanten des Blocks einzeln treffen. Die Hochachse bekommt den kleineren der
+                // beiden Faktoren, damit ein gedehntes Gehaeuse nicht gleichzeitig in die Hoehe
+                // schiesst.
+                float scaleX = GameConfig::ButtonBlockHeight(surface, rowSpan) /
+                               std::max(initialModel.size.x, 0.0001f);
+                float scaleZ = GameConfig::ButtonBlockWidth(surface, colSpan) /
+                               std::max(initialModel.size.z, 0.0001f);
+                scale = { scaleX * userScale, std::min(scaleX, scaleZ) * userScale, scaleZ * userScale };
+            } else {
+                // autoScale bringt die groesste Rohabmessung auf 1 Einheit, ButtonBlockSize dann
+                // auf die tatsaechliche Blockkante. scale=1.0 fuellt damit genau den Block.
+                float uniform = userScale * initialModel.autoScale * GameConfig::ButtonBlockSize(surface, colSpan, rowSpan);
+                scale = { uniform, uniform, uniform };
+            }
+
+            // Skalierung und Ausrichtung in einer Matrix: bei "stretch" ist die Skalierung
+            // achsenweise verschieden und laesst sich nicht mehr als einzelner Faktor aus der
+            // Boden-Ausgleichsrechnung herausziehen.
+            Matrix facing = MatrixMultiply(MatrixRotateY(group.value("rotation", 0.0f) * DEG2RAD), orientation);
+            Matrix transform = MatrixMultiply(MatrixScale(scale.x, scale.y, scale.z), facing);
 
             // Offset entlang der Flaechen-Normalen, damit der tiefste Punkt des ausgerichteten
             // Modells exakt auf der Tischflaeche aufsteht (statt auf world-Y = 0, was bei
             // geneigten/verdrehten Flaechen daneben laege).
-            float groundOffset = -RotatedMinAlongAxis(initialModel.bounds, orientation, normal) * scale;
+            float groundOffset = -RotatedMinAlongAxis(initialModel.bounds, transform, normal);
             float height = group.value("height", 0.0f) + groundOffset;
 
-            int row = group["row"].get<int>();
-            int col = group["col"].get<int>();
-            Vector3 cellCenter = GameConfig::GridCellCenter(surface, row, col);
-            Vector3 position = Vector3Add(cellCenter, Vector3Scale(normal, height));
+            Vector3 blockCenter = GameConfig::GridBlockCenter(surface, row, col, colSpan, rowSpan);
+            Vector3 position = Vector3Add(blockCenter, Vector3Scale(normal, height));
 
-            float facingDegrees = group.value("rotation", 0.0f);
-            Matrix rotation = MatrixMultiply(MatrixRotateY(facingDegrees * DEG2RAD), orientation);
+            // Eigenes Renderziel pro Display-INSTANZ, damit zwei Anzeigen desselben Typs
+            // Verschiedenes zeigen koennen.
+            int screenIndex = -1;
+            if (typeModels.hasScreen && initialModel.screenMesh >= 0) {
+                screenIndex = static_cast<int>(screens.size());
+                screens.push_back(DisplayScreen{
+                    id, LoadRenderTexture(typeModels.screenWidth, typeModels.screenHeight) });
+            }
 
             registry.RegisterInstance(id, typeId, initialStateIndex);
-            elementRefs[id] = ElementRef{ section, row, col };
-            elementsByCell[CellKey(static_cast<int>(section), row, col)] = id;
-            placements.push_back(Placement{ id, typeId, position, scale, rotation });
+            elementRefs[id] = ElementRef{ section, row, col, colSpan, rowSpan };
+            for (const auto& [cellRow, cellCol] : cells) {
+                elementsByCell[CellKey(static_cast<int>(section), cellRow, cellCol)] = id;
+            }
+            placements.push_back(Placement{ id, typeId, position, transform, screenIndex });
 
-            // Textfeld faellt automatisch in die Label-Zeile direkt unter der Button-Zeile.
-            labelPlacements.push_back(BuildLabel(surface, row + 1, col, group["text"].get<std::string>()));
+            // Textfeld faellt automatisch in die Label-Zeile direkt unter dem Block.
+            labelPlacements.push_back(BuildLabel(surface, GameConfig::LabelRowBelow(row, rowSpan),
+                                                 col, colSpan, group["text"].get<std::string>()));
         }
     }
 
@@ -295,7 +505,7 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
             }
 
             std::optional<size_t> frameSection;
-            int rowMin = INT_MAX, rowMax = INT_MIN, colMin = INT_MAX, colMax = INT_MIN;
+            int rowMin = INT_MAX, rowEndMax = INT_MIN, colMin = INT_MAX, colEndMax = INT_MIN;
             bool valid = true;
 
             for (const auto& elementId : frameEntry["elements"]) {
@@ -310,22 +520,24 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
                     valid = false;
                     break;
                 }
-                rowMin = std::min(rowMin, it->second.row);
-                rowMax = std::max(rowMax, it->second.row);
-                colMin = std::min(colMin, it->second.col);
-                colMax = std::max(colMax, it->second.col);
+                const ElementRef& ref = it->second;
+                rowMin = std::min(rowMin, ref.row);
+                colMin = std::min(colMin, ref.col);
+                // Untere Kante: eine Zeile HINTER der Label-Zeile des Elements, damit diese noch
+                // mit im Rahmen liegt. Bei einem mehrzeiligen Element ist das entsprechend weiter
+                // unten, deshalb pro Element aus dessen eigener Spannweite berechnet.
+                rowEndMax = std::max(rowEndMax, GameConfig::LabelRowBelow(ref.row, ref.rowSpan) + 1);
+                colEndMax = std::max(colEndMax, ref.col + ref.colSpan);
             }
             if (!valid || !frameSection.has_value()) {
                 continue;
             }
 
             const GameConfig::TableSurface& surface = GameConfig::TableSurfaces[*frameSection];
-            // +2 statt +1, damit die Label-Zeile direkt unter der untersten Button-Zeile mit
-            // eingeschlossen wird.
             float tuStart = GameConfig::RowBoundaryFraction(surface, rowMin);
-            float tuEnd = GameConfig::RowBoundaryFraction(surface, rowMax + 2);
+            float tuEnd = GameConfig::RowBoundaryFraction(surface, rowEndMax);
             float tvStart = static_cast<float>(colMin) / surface.cols;
-            float tvEnd = static_cast<float>(colMax + 1) / surface.cols;
+            float tvEnd = static_cast<float>(colEndMax) / surface.cols;
 
             framePlacements.push_back(BuildFrame(surface, tuStart, tuEnd, tvStart, tvEnd));
         }
@@ -357,6 +569,15 @@ std::optional<std::string> PlacementSystem::FindElementAt(int section, int row, 
     return it->second;
 }
 
+void PlacementSystem::RenderDisplays(const std::function<void(const std::string&, int, int)>& drawContent) {
+    for (const auto& screen : screens) {
+        BeginTextureMode(screen.target);
+        ClearBackground(GameConfig::ScreenClearColor);
+        drawContent(screen.id, screen.target.texture.width, screen.target.texture.height);
+        EndTextureMode();
+    }
+}
+
 void PlacementSystem::Draw() const {
     for (const auto& placement : placements) {
         const TypeModels& typeModels = modelsByType.at(placement.typeId);
@@ -365,10 +586,25 @@ void PlacementSystem::Draw() const {
             continue;
         }
 
-        Model model = typeModels.modelsByState[stateIndex]->model; // Kopie: transform-Aenderung bleibt lokal fuer diesen Draw-Call
-        model.transform = MatrixMultiply(
-            MatrixScale(placement.scale, placement.scale, placement.scale), placement.rotation);
-        DrawModel(model, placement.position, 1.0f, WHITE);
+        const LoadedModel& loaded = *typeModels.modelsByState[stateIndex];
+        const Model& model = loaded.model;
+
+        // Statt DrawModel wird Mesh fuer Mesh gezeichnet, weil die Bildschirmflaeche ein anderes
+        // Material braucht als der Rest des Modells. Die Matrix ist dieselbe, die DrawModel intern
+        // bilden wuerde: erst die fertige Skalierung/Ausrichtung, dann die Verschiebung.
+        Matrix transform = MatrixMultiply(placement.transform,
+            MatrixTranslate(placement.position.x, placement.position.y, placement.position.z));
+
+        for (int i = 0; i < model.meshCount; i++) {
+            if (i == loaded.screenMesh && placement.screenIndex >= 0) {
+                // Unbeleuchtet mit der Textur genau dieser Instanz - DrawMesh wertet das Material
+                // sofort aus, das Umhaengen der Textur wirkt also nur fuer diesen einen Aufruf.
+                screenMaterial.maps[MATERIAL_MAP_DIFFUSE].texture = screens[placement.screenIndex].target.texture;
+                DrawMesh(model.meshes[i], screenMaterial, transform);
+            } else {
+                DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], transform);
+            }
+        }
     }
 
     // Textfelder unlit (ohne Beleuchtungs-Shader) zeichnen, damit sie unabhaengig vom

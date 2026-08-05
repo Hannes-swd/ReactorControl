@@ -41,6 +41,30 @@ class ElementRegistry;
 //
 //   function start()      -- einmalig direkt nach dem (Neu-)Laden der Skripte
 //   function tick(dt)     -- jeden Frame; dt = vergangene Sekunden seit dem letzten Frame
+//
+// Displays (Elemente mit Bildschirmflaeche, siehe placement_system.h) zeichnen ihren Inhalt
+// selbst - dafuer bekommt das Element eine ondraw-Funktion:
+//
+//   function kuehl_anzeige.ondraw()
+//       screen.clear(0, 8, 4)
+//       screen.seg7(10, 20, 60, string.format("%5.1f", temperatur), 0, 255, 120)
+//   end
+//
+// Gezeichnet wird in PIXELN der Displaytextur: (0,0) ist links oben, screen.width/screen.height
+// sind deren Groesse. Wo diese Pixel in der 3D-Welt landen, ergibt sich allein aus dem Modell
+// (in Blender modellierte Bildschirmflaeche samt UV-Map) - das Skript muss darueber nichts
+// wissen. Die verfuegbaren Zeichenfunktionen (alle nur INNERHALB von ondraw gueltig):
+//
+//   screen.clear(r, g, b [,a])                      -- ganze Flaeche fuellen
+//   screen.rect(x, y, breite, hoehe, r, g, b [,a])
+//   screen.line(x1, y1, x2, y2, r, g, b [,a])
+//   screen.circle(x, y, radius, r, g, b [,a])
+//   screen.text(x, y, groesse, text, r, g, b [,a])  -- normale Schrift
+//   screen.seg7(x, y, groesse, text, r, g, b [,a])  -- Sieben-Segment-Anzeige: Ziffern, "-",
+//                                                      ".", " " sowie A/E/R/O fuer "Error"
+//   screen.bar(x, y, breite, hoehe, anteil, r, g, b [,a])  -- Balken, anteil von 0 bis 1
+//
+// Farben sind immer einzelne Zahlen von 0 bis 255, der Alphawert ist optional (Default 255).
 //   toggle(element)       -- einen Zustand weiterschalten (wie ein Klick), zyklisch
 //   after(sek, fn)        -- fn einmalig nach sek Sekunden ausfuehren
 //   every(sek, fn)        -- fn dauerhaft alle sek Sekunden ausfuehren
@@ -75,6 +99,13 @@ public:
     // geaenderte/neue/geloeschte Skriptdateien und laedt in dem Fall alles neu, ruft dann den
     // onclick-Handler des in diesem Frame geklickten Elements, faellige Timer und tick(dt) auf.
     void Update(float deltaTime);
+
+    // Ruft die ondraw-Funktion des Elements `id` auf, damit sie den Inhalt eines Displays
+    // zeichnet. Wird von PlacementSystem::RenderDisplays aufgerufen, waehrend die Textur dieses
+    // Displays das aktive Renderziel ist - alle screen.*-Aufrufe des Skripts landen dadurch
+    // dort und nicht im Spielfenster. width/height sind die Pixelgroesse dieser Textur.
+    // Hat das Element keine ondraw-Funktion, passiert nichts.
+    void DrawDisplay(const std::string& id, int width, int height);
 
     // Letzte Lua-Fehlermeldung ("" wenn alles laeuft). Wird beim erfolgreichen Neuladen und
     // beim naechsten fehlerfreien Frame geleert.
