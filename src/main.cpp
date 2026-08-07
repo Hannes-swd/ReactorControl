@@ -8,6 +8,7 @@
 #include "scene/placement_system.h"
 #include "script/script_system.h"
 #include "ui/camera_controller.h"
+#include "ui/hud.h"
 #include "ui/renderer.h"
 #include "ui/table_cursor.h"
 
@@ -33,6 +34,7 @@ int main() {
     CameraController cameraController;
     SceneRenderer sceneRenderer;
     TableCursor tableCursor;
+    Hud hud;
 
     PlacementSystem placementSystem;
     placementSystem.LoadFromDirectory(GameConfig::PlacementsDirectory, sceneRenderer.GetLightShader());
@@ -83,6 +85,11 @@ int main() {
         placementSystem.Draw();
         tableCursor.Draw();
         EndMode3D();
+
+        // Geld/Ziel sind normale globale Skript-Variablen: der HUD liest sie nur aus und
+        // zeigt sie an, gesetzt werden sie allein in den Lua-Skripten (siehe hud.h).
+        hud.Draw(scriptSystem.GetNumber(GameConfig::HudMoneyVariable),
+                 scriptSystem.GetNumber(GameConfig::HudTargetVariable));
 
         if (!sceneRenderer.HasConsoleModel()) {
             DrawText("Kein Modell gefunden: assets/Desk.obj", 10, 40, 20, GRAY);

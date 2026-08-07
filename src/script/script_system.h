@@ -37,6 +37,11 @@ class ElementRegistry;
 // ListScriptPaths). Namen, die schon einem Element gehoeren, sind dabei gesperrt und melden
 // einen Fehler, statt das Element zu verdecken (siehe GlobalNewIndex).
 //
+// Zwei dieser Variablen zeigt das Spiel selbst an: geld und ziel stehen oben rechts im Fenster
+// (Namen konfigurierbar ueber GameConfig::HudMoneyVariable/HudTargetVariable, Anzeige siehe
+// ui/hud.h). Es genuegt, sie im Skript zu setzen - "geld = geld + 100" aendert die Anzeige
+// sofort mit.
+//
 // Zusaetzlich gibt es zwei frei definierbare globale Funktionen und ein paar Helfer:
 //
 //   function start()      -- einmalig direkt nach dem (Neu-)Laden der Skripte
@@ -106,6 +111,12 @@ public:
     // dort und nicht im Spielfenster. width/height sind die Pixelgroesse dieser Textur.
     // Hat das Element keine ondraw-Funktion, passiert nichts.
     void DrawDisplay(const std::string& id, int width, int height);
+
+    // Wert einer globalen Skript-Variablen als Zahl, z.B. um sie ausserhalb der Skripte
+    // anzuzeigen (siehe ui/hud.h). Existiert die Variable nicht oder ist sie keine Zahl,
+    // kommt fallback zurueck - eine fehlende Variable ist also kein Fehler, sondern
+    // einfach ein Skript, das diesen Wert (noch) nicht benutzt.
+    double GetNumber(const char* name, double fallback = 0.0) const;
 
     // Letzte Lua-Fehlermeldung ("" wenn alles laeuft). Wird beim erfolgreichen Neuladen und
     // beim naechsten fehlerfreien Frame geleert.

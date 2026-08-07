@@ -1,7 +1,7 @@
 {
     "types": [
-        { "id": "taster_gruen", "states": ["aus"], "models": { "aus": "gruener_button.glb" } },
-        { "id": "taster_rot", "states": ["aus"], "models": { "aus": "roter_button.glb" } },
+        { "id": "taster_gruen", "states": ["aus"], "models": { "aus": "buttons/gruener_button.glb" } },
+        { "id": "taster_rot", "states": ["aus"], "models": { "aus": "buttons/roter_button.glb" } },
         {
             "id": "display_gross",
             "states": ["an"],

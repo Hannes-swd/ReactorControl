@@ -49,6 +49,43 @@ constexpr const char* ScriptsDirectory = "assets/scripts/";
 // (siehe ScriptSystem). Sie muss nicht existieren - dann gibt es einfach keine Vorgaben.
 constexpr const char* ScriptVariablesFile = "variables.lua";
 
+// --- HUD: flache Anzeige oben rechts ueber der 3D-Szene (siehe ui/hud.h) --------------------
+// Angezeigt werden zwei ganz normale globale Lua-Variablen: der aktuelle Kontostand und der
+// Betrag, den der Spieler erreichen muss. Das Skript setzt sie (Vorgabewerte in
+// ScriptVariablesFile), der HUD liest sie nur - die Anzeige braucht also keine eigene Logik
+// und aendert sich automatisch mit, sobald ein Skript die Werte anpasst.
+constexpr const char* HudMoneyVariable = "geld";
+constexpr const char* HudTargetVariable = "ziel";
+
+// raylibs Standardschrift kennt nur ASCII, ein "€" wuerde als leeres Kaestchen erscheinen.
+constexpr const char* CurrencySuffix = " EUR";
+constexpr char ThousandsSeparator = '.';
+
+// Auf dem Balken steht der Zielbetrag, direkt links daneben der aktuelle Kontostand - mehr
+// nicht, kein Rahmen und keine weiteren Beschriftungen.
+constexpr const char* HudTargetLabel = "ZIEL ";
+
+constexpr int HudMargin = 20;   // Abstand zum Fensterrand
+constexpr int HudGap = 18;      // Abstand zwischen Kontostand und Balken
+constexpr int HudBarWidth = 300;
+constexpr int HudBarHeight = 26;
+constexpr float HudBarRoundness = 0.5f;
+constexpr int HudBarSegments = 12;
+constexpr float HudBarBorderThickness = 1.5f;
+
+constexpr int HudMoneyFontSize = 32;
+constexpr int HudTargetFontSize = 16;
+
+// Dunkle Schrift und heller Balkenhintergrund, weil der HUD in der oberen Bildschirmecke vor
+// dem hellen Hintergrund der Szene liegt (ClearBackground(RAYWHITE) in main.cpp).
+constexpr Color HudMoneyColor = { 25, 30, 36, 255 };
+constexpr Color HudDebtColor = { 200, 45, 45, 255 };   // Kontostand im Minus
+constexpr Color HudBarTextColor = { 25, 30, 36, 255 };
+constexpr Color HudBarBackColor = { 226, 229, 233, 255 };
+constexpr Color HudBarBorderColor = { 120, 128, 138, 255 };
+constexpr Color HudBarColor = { 70, 200, 130, 255 };
+constexpr Color HudBarDoneColor = { 245, 190, 45, 255 }; // Balken, sobald das Ziel erreicht ist
+
 constexpr Vector3 LightPosition = { 6.0f, 8.0f, 6.0f };
 constexpr float AmbientColor[4] = { 0.25f, 0.25f, 0.25f, 1.0f };
 

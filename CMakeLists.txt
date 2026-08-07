@@ -29,6 +29,7 @@ FetchContent_MakeAvailable(lua)
 add_executable(reactor_control
     src/main.cpp
     src/ui/camera_controller.cpp
+    src/ui/hud.cpp
     src/ui/renderer.cpp
     src/ui/table_cursor.cpp
     src/scene/placement_system.cpp

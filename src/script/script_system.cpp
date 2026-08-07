@@ -694,6 +694,19 @@ void ScriptSystem::DrawDisplay(const std::string& id, int width, int height) {
     lua_setfield(L, LUA_REGISTRYINDEX, kScreenActiveKey);
 }
 
+double ScriptSystem::GetNumber(const char* name, double fallback) const {
+    if (L == nullptr || name == nullptr) {
+        return fallback;
+    }
+
+    lua_getglobal(L, name);
+    // lua_isnumber gilt auch fuer Zahlen in Textform ("100") - das ist gewollt, ein Skript soll
+    // sich hier nicht an einer Schreibweise verschlucken.
+    double value = lua_isnumber(L, -1) != 0 ? lua_tonumber(L, -1) : fallback;
+    lua_pop(L, 1);
+    return value;
+}
+
 bool ScriptSystem::BeginCall(const char* name) {
     if (L == nullptr) {
         return false;
