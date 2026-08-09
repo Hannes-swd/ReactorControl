@@ -1,7 +1,16 @@
 {
     "types": [
         { "id": "taster_gruen", "states": ["aus"], "models": { "aus": "buttons/gruener_button.glb" } },
-        { "id": "taster_rot", "states": ["aus"], "models": { "aus": "buttons/roter_button.glb" } },
+        { "id": "taster_rot",   "states": ["aus"], "models": { "aus": "buttons/roter_button.glb" } },
+        { "id": "taster_gelb",  "states": ["aus"], "models": { "aus": "buttons/gelber_button.glb" } },
+        { "id": "taster_grau",  "states": ["aus"], "models": { "aus": "buttons/grauer_button.glb" } },
+
+        { "id": "schluessel", "states": ["aus", "an"], "models": { "aus": "schluessel.glb", "an": "schluessel.glb" } },
+
+        { "id": "lampe_gruen",  "states": ["aus", "an"], "models": { "aus": "lamps/lamp_white.glb", "an": "lamps/lamp_green.glb" } },
+        { "id": "lampe_orange", "states": ["aus", "an"], "models": { "aus": "lamps/lamp_white.glb", "an": "lamps/lamp_orrange.glb" } },
+        { "id": "lampe_rot",    "states": ["aus", "an"], "models": { "aus": "lamps/lamp_white.glb", "an": "lamps/lamp_red.glb" } },
+
         {
             "id": "display_gross",
             "states": ["an"],

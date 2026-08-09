@@ -243,9 +243,9 @@ inline Vector3 GridCellCenter(const TableSurface& surface, int row, int col) {
 // Laden auf eine Textur gerendert und dann als flaches Quad IN der Label-Zeile gezeichnet -
 // liegt also genau wie die Button-Modelle schraeg auf der geneigten Pultflaeche, statt immer
 // gerade auf dem Bildschirm zu stehen.
-constexpr int LabelFontSizePx = 40; // Render-Aufloesung der Text-Textur in Pixeln
+constexpr int LabelFontSizePx = 96; // Render-Aufloesung der Text-Textur in Pixeln
 constexpr int LabelTexturePadding = 6;
-constexpr int LabelBoldRadius = 2; // "Fake Bold": Text wird (2*r+1)^2-fach mit Versatz gezeichnet
+constexpr int LabelBoldRadius = 3; // "Fake Bold": Text wird (2*r+1)^2-fach mit Versatz gezeichnet
 constexpr float LabelCellFillRatio = 0.9f; // Text nutzt max. 90% der Label-Zelle, Rest Rand
 constexpr float LabelSurfaceOffset = 0.015f; // Abstand von der Tischflaeche (gegen Z-Fighting)
 constexpr Color LabelTextColor = { 20, 20, 20, 255 };

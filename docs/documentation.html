@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>ReactorControl – Technische Dokumentation</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 20mm 20mm 20mm;
+  }
+
+  :root {
+    --text: #1b1f24;
+    --muted: #5c6570;
+    --accent: #1f4e79;
+    --rule: #c9d1d9;
+    --code-bg: #f2f4f6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { font-size: 10.5pt; }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Calibri", system-ui, sans-serif;
+    color: var(--text);
+    line-height: 1.55;
+    counter-reset: h1;
+  }
+
+  /* --- Titelblock ------------------------------------------------------- */
+
+  .titel {
+    border-bottom: 2.5pt solid var(--accent);
+    padding-bottom: 10pt;
+    margin-bottom: 26pt;
+  }
+
+  .titel h1 {
+    font-size: 25pt;
+    line-height: 1.15;
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+    counter-increment: none;
+  }
+
+  .titel h1::before { content: none; }
+
+  .titel .untertitel {
+    font-size: 13pt;
+    color: var(--muted);
+    margin-top: 5pt;
+  }
+
+  .meta {
+    margin-top: 12pt;
+    font-size: 8.5pt;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* --- Überschriften ---------------------------------------------------- */
+
+  h1 {
+    counter-increment: h1;
+    counter-reset: h2;
+    font-size: 15pt;
+    color: var(--accent);
+    margin: 26pt 0 8pt;
+    padding-bottom: 3pt;
+    border-bottom: 0.75pt solid var(--rule);
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  h1::before {
+    content: counter(h1) ". ";
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  h2 {
+    counter-increment: h2;
+    font-size: 11.5pt;
+    margin: 16pt 0 5pt;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  h2::before {
+    content: counter(h1) "." counter(h2) "  ";
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  p { margin: 0 0 8pt; orphans: 3; widows: 3; }
+
+  code {
+    font-family: Consolas, "Cascadia Mono", monospace;
+    font-size: 0.9em;
+    background: var(--code-bg);
+    padding: 0.5pt 3pt;
+    border-radius: 2pt;
+    white-space: nowrap;
+  }
+
+  strong { font-weight: 600; }
+
+  /* --- Tabelle ---------------------------------------------------------- */
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10pt 0 12pt;
+    font-size: 9.5pt;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  caption {
+    caption-side: bottom;
+    text-align: left;
+    font-size: 8.5pt;
+    color: var(--muted);
+    padding-top: 5pt;
+  }
+
+  th, td {
+    border-bottom: 0.5pt solid var(--rule);
+    padding: 4.5pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    border-bottom: 1pt solid var(--accent);
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  td.zahl { text-align: right; font-variant-numeric: tabular-nums; width: 14%; }
+
+  tr.kritisch td { background: #fdf3f2; }
+  tr.gut td      { background: #f2f8f3; }
+
+  /* --- Merkkasten ------------------------------------------------------- */
+
+  .hinweis {
+    border-left: 2.5pt solid var(--accent);
+    background: #f5f8fb;
+    padding: 8pt 12pt;
+    margin: 12pt 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .hinweis p:last-child { margin-bottom: 0; }
+
+  .hinweis .kopf {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 3pt;
+  }
+
+  /* --- Änderungsliste --------------------------------------------------- */
+
+  .aenderung {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 12pt;
+  }
+
+  .ort {
+    font-family: Consolas, "Cascadia Mono", monospace;
+    font-size: 8.5pt;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 3pt;
+  }
+</style>
+</head>
+<body>
+
+<div class="titel">
+  <h1>ReactorControl</h1>
+  <div class="untertitel">Technische Dokumentation: Lesbarkeit der Pult-Beschriftungen</div>
+  <div class="meta">Stand 9. August 2026 &nbsp;·&nbsp; C++ / raylib / Lua</div>
+</div>
+
+<h1>Das Problem</h1>
+
+<p>Die Textfelder unter den Bedienelementen – die Beschriftungen von Buttons, Lampen und Displays – waren im Spiel kaum zu entziffern. Zunächst wirkte die Schrift <em>zerfressen</em>, einzelne Striche fehlten ganz; nach einer ersten Korrektur dann <em>verschwommen</em>. Dahinter stecken drei voneinander unabhängige Ursachen, die getrennt betrachtet und getrennt behoben werden müssen.</p>
+
+<p>Betroffen sind ausschließlich die Beschriftungen, nicht die Displayinhalte. Displays zeichnen in eine eigene Textur mit fester Pixelauflösung und sind von dem Problem nicht berührt.</p>
+
+<h1>Ursache 1: Die Schriftgröße hängt an der Wortlänge</h1>
+
+<p>Eine Beschriftung wird beim Laden einmalig als Textur gerendert und anschließend als flaches Viereck in der Label-Zeile auf die geneigte Pultfläche gelegt. Die Skalierung berechnet <code>PlacementSystem::BuildLabel</code> nach der Regel „passt in die Breite <em>und</em> in die Höhe“. Es gewinnt also immer die engere der beiden Bedingungen.</p>
+
+<p>Auf der Mittelfläche ist eine Gridspalte 0,199 Welteinheiten breit und die Label-Zeile 0,100 Welteinheiten hoch – ein Seitenverhältnis von 2:1. Sobald der gerenderte Text ein größeres Seitenverhältnis hat als 2:1, begrenzt die Breite, und die zur Verfügung stehende Zeilenhöhe bleibt ungenutzt. Das ist bei fast jedem Wort der Fall.</p>
+
+<p>Gemessen an den tatsächlich erzeugten Texturen ergibt sich für einspaltige Elemente:</p>
+
+<table>
+  <caption>Gemessen an den Texturgrößen beim Laden, Mittelfläche, einspaltige Elemente.</caption>
+  <thead>
+    <tr><th>Beschriftung</th><th class="zahl">Zeichen</th><th class="zahl">Genutzte Zeilenhöhe</th></tr>
+  </thead>
+  <tbody>
+    <tr class="gut"><td>BTR</td><td class="zahl">3</td><td class="zahl">100 %</td></tr>
+    <tr><td>QUIT</td><td class="zahl">4</td><td class="zahl">86 %</td></tr>
+    <tr><td>STOER, START</td><td class="zahl">5</td><td class="zahl">62 %</td></tr>
+    <tr><td>L-TEST</td><td class="zahl">6</td><td class="zahl">55 %</td></tr>
+    <tr><td>BETRIEB, NOT-AUS, WARNUNG</td><td class="zahl">7</td><td class="zahl">47 %</td></tr>
+    <tr class="kritisch"><td>STOERUNG</td><td class="zahl">8</td><td class="zahl">39 %</td></tr>
+  </tbody>
+</table>
+
+<p>Die praktische Grenze liegt damit bei <strong>drei Zeichen</strong>. Ausgerechnet „STOERUNG“ – das Wort, auf das es im Störfall ankommt – wird auf 39 % der ohnehin flachen Label-Zeile zusammengedrückt und ist das unleserlichste Element auf dem gesamten Pult.</p>
+
+<div class="hinweis">
+  <div class="kopf">Wichtig für die Fehlersuche</div>
+  <p>Die Label-Zeile höher zu machen bringt <strong>nichts</strong>, weil nicht die Höhe begrenzt, sondern die Spaltenbreite. Beschriftungen über mehrspaltigen Elementen – etwa „KUEHLKREIS“ über einem vier Spalten breiten Display – sind aus demselben Grund unauffällig: ihnen steht die vierfache Breite zur Verfügung.</p>
+</div>
+
+<h1>Ursache 2: Fehlende Mipmaps</h1>
+
+<p>Eine Textur, die mit <code>LoadTextureFromImage</code> erzeugt wird, besitzt genau eine Detailstufe, und raylib verwendet als Standardfilter <code>POINT</code> (nächster Nachbar). Eine Beschriftungstextur von rund 190 × 52 Pixeln landet auf dem Bildschirm aber auf etwa 25 × 7 Pixeln.</p>
+
+<p>Die Grafikkarte greift dabei pro Bildschirmpixel genau ein einziges Texel heraus und verwirft die übrigen rund fünfzig. Ob ein dünner Buchstabenstrich sichtbar bleibt, entscheidet damit der Zufall. Deshalb sah die Schrift nicht bloß klein, sondern regelrecht zerfressen aus.</p>
+
+<h1>Ursache 3: Anisotrope Stauchung</h1>
+
+<p>Mipmaps allein lösen das Problem nicht, sondern tauschen es gegen ein anderes ein: Die Schrift wird unscharf statt zerfressen.</p>
+
+<p>Der Grund liegt in der Blickgeometrie. Die Beschriftungen liegen flach auf dem geneigten Pult und werden aus flachem Winkel betrachtet. Dadurch werden sie senkrecht wesentlich stärker gestaucht als waagerecht – im Verhältnis von etwa 5:1. OpenGL wählt die Mipmap-Stufe jedoch anhand der <em>stärkeren</em> der beiden Stauchungen aus. Die Stufe, die senkrecht angemessen ist, ist waagerecht viel zu grob, und die Buchstaben verschmieren seitlich.</p>
+
+<p>Am deutlichsten trifft das die kleinsten Beschriftungen, weil dort die Stauchung am extremsten ausfällt – also genau die, die ohnehin schon durch Ursache 1 benachteiligt sind.</p>
+
+<h1>Umgesetzte Änderungen</h1>
+
+<div class="aenderung">
+  <h2>Höhere Renderauflösung der Texturen</h2>
+  <span class="ort">src/core/gameconfig.h</span>
+  <p><code>GameConfig::LabelFontSizePx</code> von 40 auf 96 erhöht. Die Beschriftungstexturen wachsen dadurch von rund 190 × 52 auf etwa 450 × 108 Pixel, sodass beim Verkleinern überhaupt Detail zum Mitteln vorhanden ist.</p>
+</div>
+
+<div class="aenderung">
+  <h2>Strichstärke angepasst</h2>
+  <span class="ort">src/core/gameconfig.h</span>
+  <p><code>GameConfig::LabelBoldRadius</code> von 2 auf 3 gesetzt. Da die Schriftgröße gleichzeitig von 40 auf 96 stieg, entspricht das einer relativ <em>dünneren</em> Linie: 3,1 % statt 5,0 % der Zeichenhöhe. Zu fette Striche laufen beim Verkleinern innen zu, wodurch Buchstaben wie B, R oder O ihre Innenflächen verlieren.</p>
+</div>
+
+<div class="aenderung">
+  <h2>Mipmaps und trilineare Filterung</h2>
+  <span class="ort">src/scene/placement_system.cpp – PlacementSystem::BuildLabel</span>
+  <p>Nach dem Erzeugen der Textur werden <code>GenTextureMipmaps</code> und <code>SetTextureFilter(TEXTURE_FILTER_TRILINEAR)</code> aufgerufen. Jede Beschriftung erhält dadurch acht bis neun Detailstufen; die Grafikkarte mittelt über alle Texel, die auf ein Bildschirmpixel fallen, statt eines davon herauszugreifen. Damit ist Ursache 2 behoben.</p>
+</div>
+
+<div class="aenderung">
+  <h2>Anisotrope Filterung</h2>
+  <span class="ort">src/scene/placement_system.cpp – PlacementSystem::BuildLabel</span>
+  <p>Zusätzlich wird <code>SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_16X)</code> gesetzt. Die Grafikkarte tastet damit mehrfach entlang der stark gestauchten Richtung ab, statt auf eine gröbere Mipmap-Stufe auszuweichen, und behält die Schärfe in der Gegenrichtung. Damit ist Ursache 3 behoben. Die Hardware meldet volle Unterstützung für 16-fache Anisotropie; im Log erscheint keine Warnung.</p>
+</div>
+
+<h1>Was noch offen ist</h1>
+
+<p>Ursache 1 ist ausdrücklich <strong>nicht</strong> behoben. Filterung kann keine Bildpunkte erzeugen, die nicht vorhanden sind: „STOERUNG“ wird weiterhin mit 39 % der Zeilenhöhe gezeichnet und ist nur wenige Bildschirmpixel hoch – jetzt sauber statt matschig, aber nach wie vor klein. Dafür bleiben zwei Wege.</p>
+
+<h2>Kurzfristig: Beschriftungen auf drei Zeichen kürzen</h2>
+
+<p>BETRIEB wird zu BTR, NOT-AUS zu NOT, STOERUNG zu STR, WARNUNG zu WRN. Das ist allein in den Platzierungs-JSONs zu erledigen, kostet keine Codeänderung und verdoppelt bis verdreifacht die Schriftgröße der schlechtesten Fälle. Abkürzungen sind auf realen Schaltwarten ohnehin die Regel; das Handbuch löst sie auf.</p>
+
+<h2>Strukturell: Zoom beziehungsweise Heranfahren der Kamera</h2>
+
+<p>Die Kamera steht derzeit fest auf drei Blickrichtungen (<code>GameConfig::ViewTargets</code>). Ein Heranfahren an die gerade betrachtete Fläche löst das Leseproblem dauerhaft und wird spätestens dann unverzichtbar, wenn das Pult statt zwei Dutzend mehrere hundert Elemente trägt. Der gleiche Mechanismus liefert außerdem die Nahaufnahmen einzelner Bediengruppen, die das geplante Handbuch als Screenshots braucht.</p>
+
+</body>
+</html>

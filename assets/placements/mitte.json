@@ -1,28 +1,42 @@
 {
     "elements": [
-        {
-            "id": "zaehler_anzeige",
-            "type": "display_gross",
-            "section": 0,
-            "row": 2,
-            "col": 18,
-            "text": "ZAEHLER"
-        },
-        {
-            "id": "knopf_hoch",
-            "type": "taster_gruen",
-            "section": 0,
-            "row": 6,
-            "col": 19,
-            "text": "+"
-        },
-        {
-            "id": "knopf_runter",
-            "type": "taster_rot",
-            "section": 0,
-            "row": 6,
-            "col": 20,
-            "text": "-"
-        }
+        { "id": "anlage_lampe_betrieb", "type": "lampe_gruen",  "section": 0, "row": 4, "col": 4,  "text": "BETRIEB" },
+        { "id": "anlage_lampe_stoer",   "type": "lampe_rot",    "section": 0, "row": 4, "col": 5,  "text": "STOER" },
+        { "id": "anlage_schluessel",    "type": "schluessel",   "section": 0, "row": 6, "col": 4,  "text": "START" },
+        { "id": "anlage_notaus",        "type": "taster_rot",   "section": 0, "row": 6, "col": 5,  "text": "NOT-AUS" },
+
+        { "id": "p1_lampe_betrieb", "type": "lampe_gruen", "section": 0, "row": 4, "col": 8, "text": "BTR" },
+        { "id": "p1_lampe_stoer",   "type": "lampe_rot",   "section": 0, "row": 4, "col": 9, "text": "STOER" },
+        { "id": "p1_ein",           "type": "taster_gruen","section": 0, "row": 6, "col": 8, "text": "P1 EIN" },
+        { "id": "p1_aus",           "type": "taster_rot",  "section": 0, "row": 6, "col": 9, "text": "P1 AUS" },
+
+        { "id": "p2_lampe_betrieb", "type": "lampe_gruen", "section": 0, "row": 4, "col": 12, "text": "BTR" },
+        { "id": "p2_lampe_stoer",   "type": "lampe_rot",   "section": 0, "row": 4, "col": 13, "text": "STOER" },
+        { "id": "p2_ein",           "type": "taster_gruen","section": 0, "row": 6, "col": 12, "text": "P2 EIN" },
+        { "id": "p2_aus",           "type": "taster_rot",  "section": 0, "row": 6, "col": 13, "text": "P2 AUS" },
+
+        { "id": "v1_lampe_auf", "type": "lampe_gruen",  "section": 0, "row": 4, "col": 16, "text": "AUF" },
+        { "id": "v1_lampe_zu",  "type": "lampe_orange", "section": 0, "row": 4, "col": 17, "text": "ZU" },
+        { "id": "v1_auf",       "type": "taster_gruen", "section": 0, "row": 6, "col": 16, "text": "V1 AUF" },
+        { "id": "v1_zu",        "type": "taster_rot",   "section": 0, "row": 6, "col": 17, "text": "V1 ZU" },
+
+        { "id": "melde_anzeige",        "type": "display_gross", "section": 0, "row": 4, "col": 20, "text": "KUEHLKREIS" },
+        { "id": "melde_lampe_warnung",  "type": "lampe_orange",  "section": 0, "row": 4, "col": 25, "text": "WARNUNG" },
+        { "id": "melde_lampe_stoerung", "type": "lampe_rot",     "section": 0, "row": 4, "col": 26, "text": "STOERUNG" },
+        { "id": "melde_quittieren",     "type": "taster_gelb",   "section": 0, "row": 6, "col": 25, "text": "QUIT" },
+        { "id": "melde_test",           "type": "taster_grau",   "section": 0, "row": 6, "col": 26, "text": "L-TEST" },
+
+        { "id": "zaehler_anzeige", "type": "display_gross", "section": 0, "row": 4, "col": 29, "text": "ZAEHLER" },
+        { "id": "knopf_hoch",      "type": "taster_gruen",  "section": 0, "row": 4, "col": 34, "text": "+" },
+        { "id": "knopf_runter",    "type": "taster_rot",    "section": 0, "row": 6, "col": 34, "text": "-" }
+    ],
+
+    "frames": [
+        { "elements": ["anlage_lampe_betrieb", "anlage_lampe_stoer", "anlage_schluessel", "anlage_notaus"] },
+        { "elements": ["p1_lampe_betrieb", "p1_lampe_stoer", "p1_ein", "p1_aus"] },
+        { "elements": ["p2_lampe_betrieb", "p2_lampe_stoer", "p2_ein", "p2_aus"] },
+        { "elements": ["v1_lampe_auf", "v1_lampe_zu", "v1_auf", "v1_zu"] },
+        { "elements": ["melde_anzeige", "melde_lampe_warnung", "melde_lampe_stoerung", "melde_quittieren", "melde_test"] },
+        { "elements": ["zaehler_anzeige", "knopf_hoch", "knopf_runter"] }
     ]
 }

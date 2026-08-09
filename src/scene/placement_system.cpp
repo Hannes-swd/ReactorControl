@@ -108,6 +108,19 @@ PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
         }
     }
     Texture2D texture = LoadTextureFromImage(image);
+    // Ohne Mipmaps greift die GPU aus der stark verkleinerten Textur pro Bildschirmpixel nur
+    // ein einziges Texel heraus - duenne Striche fallen dadurch zufaellig ganz weg und der
+    // Text wirkt zerfressen. Mipmaps mitteln stattdessen ueber alle Texel, die auf das Pixel
+    // fallen; TRILINEAR blendet zusaetzlich zwischen den Stufen, damit der Uebergang beim
+    // Naeherkommen nicht springt.
+    GenTextureMipmaps(&texture);
+    SetTextureFilter(texture, TEXTURE_FILTER_TRILINEAR);
+    // Reicht allein aber nicht: die Quads liegen flach auf dem geneigten Pult und werden
+    // senkrecht viel staerker gestaucht als waagerecht. OpenGL waehlt die Mipmap-Stufe nach
+    // der STAERKEREN Stauchung - waagerecht ist sie damit viel zu grob und die Buchstaben
+    // verschmieren seitlich. Anisotropes Filtern tastet stattdessen mehrfach entlang der
+    // gestauchten Richtung ab und behaelt die Schaerfe in der anderen Richtung.
+    SetTextureFilter(texture, TEXTURE_FILTER_ANISOTROPIC_16X);
     UnloadImage(image);
 
     // Ein mehrere Spalten breites Element bekommt auch ein entsprechend breiteres Textfeld,
