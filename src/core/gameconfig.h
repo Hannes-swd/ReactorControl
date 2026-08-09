@@ -69,8 +69,6 @@ constexpr int HudMargin = 20;   // Abstand zum Fensterrand
 constexpr int HudGap = 18;      // Abstand zwischen Kontostand und Balken
 constexpr int HudBarWidth = 300;
 constexpr int HudBarHeight = 26;
-constexpr float HudBarRoundness = 0.5f;
-constexpr int HudBarSegments = 12;
 constexpr float HudBarBorderThickness = 1.5f;
 
 constexpr int HudMoneyFontSize = 32;

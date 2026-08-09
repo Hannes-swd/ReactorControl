@@ -60,17 +60,16 @@ void Hud::Draw(double money, double target) const {
 
     // Balken: der leere Teil bleibt sichtbar, damit man sieht, wie weit es noch ist. Der
     // gefuellte Teil waechst von links und wird gold, sobald das Ziel erreicht ist.
+    // Kanten bewusst eckig - das passt zur nuechternen Anmutung einer Reaktorsteuerung.
     const float fraction = TargetFraction(money, target);
-    DrawRectangleRounded(bar, GameConfig::HudBarRoundness, GameConfig::HudBarSegments,
-                         GameConfig::HudBarBackColor);
+    DrawRectangleRec(bar, GameConfig::HudBarBackColor);
     if (fraction > 0.0f) {
         Rectangle filled = bar;
         filled.width = bar.width * fraction;
-        DrawRectangleRounded(filled, GameConfig::HudBarRoundness, GameConfig::HudBarSegments,
-                             money >= target ? GameConfig::HudBarDoneColor : GameConfig::HudBarColor);
+        DrawRectangleRec(filled,
+                         money >= target ? GameConfig::HudBarDoneColor : GameConfig::HudBarColor);
     }
-    DrawRectangleRoundedLinesEx(bar, GameConfig::HudBarRoundness, GameConfig::HudBarSegments,
-                                GameConfig::HudBarBorderThickness, GameConfig::HudBarBorderColor);
+    DrawRectangleLinesEx(bar, GameConfig::HudBarBorderThickness, GameConfig::HudBarBorderColor);
 
     // Zielbetrag mittig auf dem Balken - er beschriftet damit genau das, was sich fuellt.
     const std::string goal = GameConfig::HudTargetLabel + FormatAmount(target);
