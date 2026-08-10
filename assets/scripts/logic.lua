@@ -100,6 +100,9 @@ ba_b2.onclick = function() auto_an = true end
 meld_b1.onclick = function()
     quittiert = true
     stoerung = false
+    -- Auch den Klartext loeschen: sonst steht die alte Meldung rot auf dem Display, obwohl
+    -- laengst quittiert wurde, und sieht wie eine anstehende Stoerung aus.
+    stoer_text = ""
     for b = 1, 2 do
         local s = bl[b]
         s.stoer_hkp1, s.stoer_hkp2 = false, false
@@ -193,8 +196,16 @@ for b = 1, 2 do
     el(p .. "by_b1").onclick = function() s.by = true end
     el(p .. "by_b2").onclick = function() s.by = false end
 
+    -- Die Turbine wird freigegeben, auch wenn noch kein Dampf ansteht - sie laeuft dann
+    -- einfach noch nicht hoch. Damit der Bediener nicht raetselt, warum nichts passiert,
+    -- meldet sie in dem Fall die fehlende Voraussetzung im Klartext.
     el(p .. "tu_b1").onclick = function()
-        if s.vakuum > 50.0 then s.tu = true else melde("B" .. b .. " KEIN VAKUUM") end
+        if s.vakuum <= 50.0 then
+            melde("B" .. b .. " KEIN VAKUUM")
+        else
+            s.tu = true
+            if s.d_druck <= 15.0 then melde("B" .. b .. " DAMPFDRUCK TIEF") end
+        end
     end
     el(p .. "tu_b2").onclick = function() s.tu = false; s.netz = false end
     el(p .. "gen_b1").onclick = function() s.gen = true end
@@ -344,7 +355,9 @@ local function block_lampen(b)
         lampe(p .. a .. "_l2", (s["stoer_" .. a] or false) and blinkt())
     end
 
-    lampe(p .. "tu_l1", s.dreh > 5.0)
+    -- Freigabe statt Drehzahl: sonst gibt der Taster EIN keine sichtbare Rueckmeldung, solange
+    -- noch kein Dampf ansteht. Die tatsaechliche Drehzahl steht auf dem Display BLOCK x.
+    lampe(p .. "tu_l1", s.tu)
     lampe(p .. "tu_l2", s.dreh > 103.0)
     lampe(p .. "gen_l1", s.gen)
     lampe(p .. "gen_l2", s.gen and s.dreh >= SYNC_MIN and s.dreh <= SYNC_MAX and not s.netz)
