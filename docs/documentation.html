@@ -323,11 +323,14 @@
 
 <p>Jede Pultfläche trägt <strong>drei Bedienbänder</strong>. Ein Band besteht aus einer Reihe Meldeleuchten und der Tasterreihe darunter.</p>
 
-<div class="abb">
-  <div class="platz">[ Abbildung: Gesamtansicht der Doppelblockwarte ]</div>
-  <div class="bu"><strong>Abbildung 1</strong> — Links Block 1, in der Mitte die gemeinsame Anlagenführung, rechts Block 2.</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:12pt 0;">
+  <img src="img/warte_links.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:8pt 0 4pt;" alt="Linker Fluegel">
+  <p style="font-size:8.5pt; color:#5c6570; margin:0 0 12pt;"><strong>Abbildung 1</strong> &mdash; Linker Fl&uuml;gel: Block 1 vollst&auml;ndig. Drei Bedienb&auml;nder, dazwischen die drei Anzeigen des Blocks.</p>
+  <img src="img/warte_mitte.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:8pt 0 4pt;" alt="Mittelflaeche">
+  <p style="font-size:8.5pt; color:#5c6570; margin:0 0 12pt;"><strong>Abbildung 2</strong> &mdash; Mittelfl&auml;che: gemeinsame Anlagenf&uuml;hrung. Unten die vier Hauptanzeigen, dar&uuml;ber die beiden Statusleisten und die Stromversorgung, ganz oben die Nebenanlagen.</p>
+  <img src="img/warte_rechts.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:8pt 0 4pt;" alt="Rechter Fluegel">
+  <p style="font-size:8.5pt; color:#5c6570; margin:0 0 12pt;"><strong>Abbildung 3</strong> &mdash; Rechter Fl&uuml;gel: Block 2, baugleich zu Block 1.</p>
 </div>
-
 <h2 id="k1-2">Bedienkonzept</h2>
 
 <h3 id="k1-2-1">Aufbau eines Antriebsbausteins</h3>
@@ -335,11 +338,11 @@
 <p>Jeder schaltbare Antrieb wird nach demselben Muster bedient und ist am Pult durch eine Umrandung zusammengefasst:</p>
 
 <ul>
-  <li><strong>Obere Reihe, linke Leuchte:</strong> das <em>Anlagenkennzeichen</em> — welches System die Gruppe bedient. Leuchtet grün, wenn der Antrieb läuft.</li>
-  <li><strong>Obere Reihe, rechte Leuchte:</strong> Störung beziehungsweise Gegenstellung.</li>
-  <li><strong>Untere Reihe:</strong> zwei getrennte Taster für EIN und AUS. Es gibt keinen Umschalter, damit im Störfall kein Zweifel über die befohlene Richtung entsteht.</li>
+  <li><strong>Hintere Reihe &ndash; zwei Taster</strong>, getrennt f&uuml;r EIN und AUS. Es gibt keinen Umschalter, damit im St&ouml;rfall kein Zweifel &uuml;ber die befohlene Richtung entsteht.</li>
+  <li><strong>Vordere Reihe &ndash; zwei Meldeleuchten.</strong> Die linke tr&auml;gt das <em>Anlagenkennzeichen</em> und sagt damit, welches System die Gruppe bedient; sie leuchtet gr&uuml;n, wenn der Antrieb l&auml;uft. Die rechte meldet St&ouml;rung beziehungsweise Gegenstellung.</li>
 </ul>
 
+<p>Auf dem Bildschirm erscheinen die Taster deshalb <em>oberhalb</em> der zugeh&ouml;rigen Leuchten: das Pult ist geneigt, und was weiter vom Bediener entfernt liegt, sitzt im Bild weiter oben. Jede Beschriftung steht unmittelbar &uuml;ber dem Element, zu dem sie geh&ouml;rt.</p>
 <div class="hinweis">
   <div class="kopf">Grundregel</div>
   <p>Ein gedrückter Taster bedeutet nicht, dass der Antrieb läuft — der Taster ist ein Befehl, keine Zustandsanzeige. Maßgeblich ist ausschließlich die Meldeleuchte. Bleibt sie nach dem Befehl dunkel, wurde er nicht ausgeführt; die Ursache steht im Fehlerbehebungs-Kapitel der Baugruppe.</p>
@@ -468,9 +471,9 @@
 
 <p>Jeder Block hat auf der Mittelfläche eine eigene Freigabegruppe <span class="kurz">FR1</span> beziehungsweise <span class="kurz">FR2</span>; die Schnellabschaltung <span class="kurz">SCR</span> sitzt auf der jeweiligen Blockfläche.</p>
 
-<div class="abb">
-  <div class="platz">[ Abbildung: Gruppen FR1 und FR2 auf der Mittelfläche ]</div>
-  <div class="bu"><strong>Abbildung 2</strong> — Die beiden Schlüsselschalter mit dem jeweiligen Block-NOT-AUS daneben.</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:12pt 0;">
+  <img src="img/freigabe.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:0 0 4pt;" alt="Freigabegruppen FR1 und FR2">
+  <p style="font-size:8.5pt; color:#5c6570; margin:0;"><strong>Abbildung 7</strong> &mdash; Die beiden Freigabegruppen auf der Mittelfl&auml;che. Je Block ein Schl&uuml;sselschalter <span class="kurz">STA</span> und daneben der Block-NOT-AUS; darunter die Leuchten <span class="kurz">FR1</span> beziehungsweise <span class="kurz">FR2</span> und die Sammelst&ouml;rung.</p>
 </div>
 
 <h2 id="k3-1">Steuerung</h2>
@@ -768,25 +771,111 @@
 <h1 id="k9">Betrieb</h1>
 
 <h2 id="k9-1">Anfahren eines Blocks</h2>
-
-<p>Zuerst die gemeinsamen Anlagen, dann der Block. Wer eine Stufe überspringt, bekommt eine Störmeldung statt eines Anlaufs.</p>
-
-<ol class="schritte">
-  <li><strong>Stromversorgung herstellen:</strong> <span class="kurz">EB</span> EIN, danach <span class="kurz">SCA</span> EIN. Beides ist nötig.</li>
-  <li><strong>Zwischenkühlkreis</strong> <span class="kurz">ZWK</span> EIN, dann die <strong>Komponentenkühlung</strong> des Blocks <span class="kurz">KK1</span> EIN.</li>
-  <li><strong>Kondensationsanlage:</strong> <span class="kurz">KW1</span> EIN, dann <span class="kurz">KD1</span> EIN, dann <span class="kurz">VA1</span> EIN. Das Vakuum braucht einige Sekunden.</li>
-  <li><strong>Betriebsart AUTO</strong> wählen, damit das Dampferzeugerniveau selbsttätig geregelt wird.</li>
-  <li><strong>Block freigeben:</strong> Schlüsselschalter <span class="kurz">FR1</span> auf START.</li>
-  <li><strong>Beide Hauptkühlmittelpumpen</strong> starten: <span class="kurz">HK1</span> und <span class="kurz">HK2</span> EIN. Die Statusleuchte PRI wird grün.</li>
-  <li><strong>Speisewasser:</strong> <span class="kurz">SP1</span> EIN (in AUTO geschieht das selbst).</li>
-  <li><strong>Stabgruppe freigeben:</strong> <span class="kurz">G1</span> drücken.</li>
-  <li><strong>Regelstäbe ausfahren</strong> auf etwa 40–50 %. Temperatur und Druck beobachten.</li>
-  <li><strong>Druck einstellen:</strong> mit <span class="kurz">HZG</span> anheben, mit <span class="kurz">SPR</span> senken, Zielbereich 100–170 bar.</li>
-  <li><strong>Umleitstation</strong> <span class="kurz">BYP</span> AUF, bis der Dampferzeugerdruck 15 bar überschreitet.</li>
-  <li><strong>Frischdampf</strong> <span class="kurz">FD</span> AUF und <strong>Turbine</strong> <span class="kurz">TUR</span> EIN. Die Drehzahl läuft auf 100 %.</li>
-  <li><strong>Generator erregen</strong> (<span class="kurz">ERR</span>). Sobald <span class="kurz">SYN</span> orange leuchtet: <strong>Netzschalter</strong> <span class="kurz">NZ1</span> EIN.</li>
-  <li><strong>Leistung hochfahren</strong> — ab 50 % müssen beide Hauptkühlmittelpumpen laufen.</li>
-</ol>
+<p>Zuerst die gemeinsamen Anlagen, dann der Block. Wer eine Stufe &uuml;berspringt, bekommt eine St&ouml;rmeldung statt eines Anlaufs. Jeder Schritt zeigt die Bediengruppe in Nahaufnahme; der rote Kasten umschlie&szlig;t den zu dr&uuml;ckenden Taster und die zugeh&ouml;rige Meldeleuchte.</p>
+<p><strong>Steuerung:</strong> Pfeiltasten <span class="kurz">&larr;</span> und <span class="kurz">&rarr;</span> wechseln die Blickrichtung, Linksklick dr&uuml;ckt einen Taster, <span class="kurz">ESC</span> beendet. Der Blick startet auf der Mittelfl&auml;che.</p>
+<h3 id="k9-1-1">Schritte 1 bis 9 &ndash; Mittelfl&auml;che</h3>
+<p>Stromversorgung, K&uuml;hlkette und Blockfreigabe. Alles auf der Fl&auml;che, auf die du beim Start schaust.</p>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">1</span><strong>Eigenbedarf <span class="kurz">EB</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Die Normalversorgung. Sie allein gen&uuml;gt noch nicht &mdash; es fehlt die Schiene.</p>
+  <img src="img/schritt_1.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 1">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">2</span><strong>Schiene A <span class="kurz">SCA</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Erst jetzt liegt Strom an. Die rote St&ouml;rleuchte neben <span class="kurz">EB</span> erlischt, und ab hier lassen sich &uuml;berhaupt Antriebe starten.</p>
+  <img src="img/schritt_2.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 2">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">3</span><strong>Zwischenk&uuml;hlkreis <span class="kurz">ZWK</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Versorgt die Komponentenk&uuml;hlung beider Bl&ouml;cke.</p>
+  <img src="img/schritt_3.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 3">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">4</span><strong>Komponentenk&uuml;hlung <span class="kurz">KK1</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">K&uuml;hlt die Lager der Hauptk&uuml;hlmittelpumpen. Ohne sie werden die Pumpen sp&auml;ter abgewiesen.</p>
+  <img src="img/schritt_4.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 4">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">5</span><strong>Hauptk&uuml;hlwasser <span class="kurz">KW1</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Erste Stufe der Kondensationsanlage.</p>
+  <img src="img/schritt_5.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 5">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">6</span><strong>Kondensator <span class="kurz">KD1</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Setzt das Hauptk&uuml;hlwasser voraus.</p>
+  <img src="img/schritt_6.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 6">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">7</span><strong>Vakuumpumpe <span class="kurz">VA1</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Setzt Kondensator und K&uuml;hlwasser voraus. Das Vakuum baut sich &uuml;ber einige Sekunden auf bis etwa 95 % &mdash; ablesbar auf dem Display <span class="kurz">BLOCK 1</span>.</p>
+  <img src="img/schritt_7.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 7">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">8</span><strong>Betriebsart <span class="kurz">AUT</span> &rarr; dr&uuml;cken</strong></p>
+  <p style="margin:0 0 2pt;">Ab jetzt regeln die Speisewasserpumpen das Dampferzeugerniveau selbstt&auml;tig. Erspart st&auml;ndiges Nachf&uuml;hren.</p>
+  <img src="img/schritt_8.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 8">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">9</span><strong>Blockfreigabe <span class="kurz">FR1</span> &rarr; Schl&uuml;ssel drehen</strong></p>
+  <p style="margin:0 0 2pt;">Der Block ist freigegeben, die Leuchte <span class="kurz">FR1</span> wird gr&uuml;n. Erst jetzt lassen sich Regelst&auml;be und Blockantriebe bewegen.</p>
+  <img src="img/schritt_9.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 9">
+</div>
+<h3 id="k9-1-2">Schritte 10 bis 18 &ndash; linker Fl&uuml;gel</h3>
+<p>Mit der Pfeiltaste <span class="kurz">&larr;</span> zum linken Fl&uuml;gel drehen. F&uuml;r Block 2 gilt dasselbe auf dem rechten Fl&uuml;gel.</p>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">10</span><strong>Hauptk&uuml;hlmittelpumpe 1 <span class="kurz">HK1</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Auf dem linken Fl&uuml;gel, vorderes Band.</p>
+  <img src="img/schritt_10.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 10">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">11</span><strong>Hauptk&uuml;hlmittelpumpe 2 <span class="kurz">HK2</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Beide werden gebraucht: eine allein reicht nur bis etwa halbe Leistung. Die Statusleuchte <span class="kurz">PRI</span> wird gr&uuml;n.</p>
+  <img src="img/schritt_11.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 11">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">12</span><strong>Stabgruppe <span class="kurz">G1</span> &rarr; dr&uuml;cken</strong></p>
+  <p style="margin:0 0 2pt;">Ohne freigegebene Stabgruppe lassen sich die St&auml;be nicht ausfahren &mdash; es erscheint sonst die Meldung KEINE STABGRUPPE.</p>
+  <img src="img/schritt_12.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 12">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">13</span><strong>Regelst&auml;be <span class="kurz">RX</span> &rarr; Taster AUS mehrfach</strong></p>
+  <p style="margin:0 0 2pt;">Jeder Klick f&auml;hrt die St&auml;be 5 % weiter heraus und erh&ouml;ht die Leistung. Etwa 40&ndash;50 % gen&uuml;gen zum Anfahren. Der gr&uuml;ne Taster hei&szlig;t AUS, weil er die St&auml;be <em>ausf&auml;hrt</em>.</p>
+  <img src="img/schritt_13.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 13">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">14</span><strong>Druckhalter <span class="kurz">HZG</span> / <span class="kurz">SPR</span></strong></p>
+  <p style="margin:0 0 2pt;">Den Primaerdruck im Bereich 100&ndash;170 bar halten: <span class="kurz">HZG</span> hebt an, <span class="kurz">SPR</span> senkt. Beide Taster schalten um. Anzeige auf dem Display <span class="kurz">PRIMAER 1</span>.</p>
+  <img src="img/schritt_14.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 14">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">15</span><strong>Umleitstation <span class="kurz">BYP</span> &rarr; AUF</strong></p>
+  <p style="margin:0 0 2pt;">F&uuml;hrt Dampf am Turbosatz vorbei in den Kondensator. Offen lassen, bis der Dampferzeugerdruck 15 bar &uuml;berschreitet.</p>
+  <img src="img/schritt_15.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 15">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">16</span><strong>Frischdampfventil <span class="kurz">FD</span> &rarr; AUF</strong></p>
+  <p style="margin:0 0 2pt;">Gibt den Dampf auf die Turbine frei. Nur bei freigegebenem Block m&ouml;glich.</p>
+  <img src="img/schritt_16.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 16">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">17</span><strong>Turbine <span class="kurz">TUR</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Setzt ein Vakuum &uuml;ber 50 % voraus, sonst erscheint KEIN VAKUUM. Die Drehzahl l&auml;uft auf 100 % hoch.</p>
+  <img src="img/schritt_17.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 17">
+</div>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">18</span><strong>Generator <span class="kurz">GEN</span> &rarr; ERR</strong></p>
+  <p style="margin:0 0 2pt;">Erregen, sobald die Drehzahl steht. Die orange Leuchte <span class="kurz">SYN</span> meldet, dass synchronisiert werden darf.</p>
+  <img src="img/schritt_18.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 18">
+</div>
+<div class="warnung"><div class="kopf">Reihenfolge nicht vertauschen</div><p>Erst den Abnehmer, dann die Leistung. Steht kein Dampfabnehmer bereit &mdash; Umleitstation und Frischdampfventil beide zu &mdash; steigt der Dampferzeugerdruck ungebremst, w&auml;hrend der Reaktor weiter heizt. Der Block geht dann &uuml;ber den Primaerdruck in Schnellabschaltung.</p></div>
+<h3 id="k9-1-3">Schritt 19 &ndash; ans Netz</h3>
+<p>Zur&uuml;ck zur Mittelfl&auml;che mit der Pfeiltaste <span class="kurz">&rarr;</span>.</p>
+<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
+  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">19</span><strong>Netzschalter <span class="kurz">NZ1</span> &rarr; EIN</strong></p>
+  <p style="margin:0 0 2pt;">Zur&uuml;ck auf der Mittelfl&auml;che. Nur im Drehzahlfenster 98&ndash;102 % und mit erregtem Generator. Danach l&auml;uft der Erl&ouml;s.</p>
+  <img src="img/schritt_19.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 19">
+</div>
+<p>Zur Kontrolle dient die <strong>Statusleiste</strong> von Block 1 auf der Mittelfl&auml;che: <span class="kurz">RX PRI DH DE SPW TUR GEN NTZ</span> schaltet beim Anfahren von links nach rechts durch. Die erste dunkle Leuchte zeigt, an welcher Stelle die Kette abrei&szlig;t.</p>
 
 <h2 id="k9-2">Leistungsbetrieb</h2>
 
@@ -913,7 +1002,7 @@
 
 <h1 id="anhang">Anhang: Verzeichnis aller Bediengruppen</h1>
 <p>Dieses Verzeichnis listet jede der 71 Bediengruppen mit ihrer Lage am Pult und der Belegung ihrer vier Elemente. Es wird unmittelbar aus den Platzierungsdateien erzeugt und kann deshalb nicht vom tats&auml;chlichen Pult abweichen.</p>
-<p>Die Spalte <em>Lage</em> nennt Band und Spalten: Band A liegt am hinteren Pultrand, Band C am vorderen. Die Spaltennummer entspricht dem Gridraster der jeweiligen Fl&auml;che.</p>
+<p>Die Spalte <em>Lage</em> nennt Band und Spalten: Band A liegt am vorderen Pultrand (n&auml;her am Bediener), Band C am hinteren. Die Spaltennummer entspricht dem Gridraster der jeweiligen Fl&auml;che.</p>
 <h2>Links (Block 1)</h2>
 <table>
 <caption>Bediengruppen der Fl&auml;che Links (Block 1), nach Band und Spalte geordnet.</caption>
