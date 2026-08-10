@@ -93,6 +93,26 @@ void TableCursor::Draw() const {
                 Vector3 to = CornerPoint(static_cast<int>(s), 1.0f, static_cast<float>(col) / surface.cols);
                 DrawLine3D(from, to, DARKGRAY);
             }
+
+            // Sperrzone an den Pultecken rot durchkreuzen: dort ueberlappt diese Flaeche in der
+            // Draufsicht eine andere, platzierte Elemente wuerden ineinanderstecken. Das
+            // Platzierungssystem weist solche Elemente beim Laden ab (siehe CellBlocked) - die
+            // Markierung zeigt schon beim Entwerfen, wo kein Platz ist.
+            for (int row = 0; row < surface.rows; row++) {
+                for (int col = 0; col < surface.cols; col++) {
+                    if (!GameConfig::CellBlocked(s, row, col)) {
+                        continue;
+                    }
+                    float fu0 = GameConfig::RowBoundaryFraction(surface, row);
+                    float fu1 = GameConfig::RowBoundaryFraction(surface, row + 1);
+                    float fv0 = static_cast<float>(col) / surface.cols;
+                    float fv1 = static_cast<float>(col + 1) / surface.cols;
+                    DrawLine3D(CornerPoint(static_cast<int>(s), fu0, fv0),
+                               CornerPoint(static_cast<int>(s), fu1, fv1), GameConfig::BlockedCellColor);
+                    DrawLine3D(CornerPoint(static_cast<int>(s), fu0, fv1),
+                               CornerPoint(static_cast<int>(s), fu1, fv0), GameConfig::BlockedCellColor);
+                }
+            }
         }
     }
 

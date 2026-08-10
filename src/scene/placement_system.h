@@ -62,8 +62,14 @@
 //   ]
 //   Alle Felder unter "screen" sind optional ("width"/"height": Aufloesung der Displaytextur,
 //   Default GameConfig::ScreenDefault...; "marker": Basisfarbe der Bildschirmflaeche als
-//   [r,g,b], Default GameConfig::ScreenMarkerColor). Findet sich im Modell keine Flaeche mit
-//   dieser Farbe, wird das Element ganz normal ohne Bildschirm gezeichnet.
+//   [r,g,b], Default GameConfig::ScreenMarkerColor; "inset": Anteil jeder Kante, den das
+//   Gehaeuse verdeckt, Default GameConfig::ScreenDefaultInset). Findet sich im Modell keine
+//   Flaeche mit dieser Farbe, wird das Element ganz normal ohne Bildschirm gezeichnet.
+//   Zum "inset": die Bildschirmflaeche im .glb reicht meist ein Stueck unter den Rahmen. Ohne
+//   Korrektur wird die Textur ueber die GESAMTE Flaeche gespannt, sodass oben, unten und an den
+//   Seiten ein Streifen des Inhalts hinter dem Gehaeuse verschwindet. Ein Inset staucht die
+//   Textur in die sichtbare Oeffnung. Teilen sich mehrere Typen dasselbe Modell, gilt das Inset
+//   des zuerst geladenen Typs - die Flaeche wird nur einmal pro Modell vorbereitet.
 //   Jede Display-INSTANZ bekommt eine eigene Textur - zwei Elemente desselben Typs zeigen also
 //   Verschiedenes, obwohl sie sich Modell und Geometrie teilen. Der Inhalt wird von aussen
 //   gezeichnet (siehe RenderDisplays); die Bildschirmflaeche wird unbeleuchtet gezeichnet, damit
@@ -215,13 +221,23 @@ private:
     // traegt (siehe Klassenkommentar). Deren Texturkoordinaten werden dabei einmalig aus der
     // Geometrie neu berechnet, damit der Displayinhalt garantiert richtig herum steht, egal wie
     // die UV-Map in Blender liegt. Mehrfachaufrufe fuer dasselbe Modell tun nichts.
-    static void PrepareScreenMesh(LoadedModel& loaded, Color marker);
+    // `inset` ist der Anteil jeder Kante, den das Gehaeuse verdeckt (siehe
+    // GameConfig::ScreenDefaultInset): die Textur wird dann in die sichtbare Oeffnung gestaucht
+    // statt ueber die gesamte Flaeche gespannt.
+    static void PrepareScreenMesh(LoadedModel& loaded, Color marker, float inset);
 
     // Rendert `text` auf eine Textur und berechnet die vier Eckpunkte des Quads, mittig in der
     // Label-Zeile (row) unter den Spalten col..col+colSpan-1 auf `surface`, seitenverhaeltnis-treu
     // eingepasst (kein Verzerren).
-    static LabelPlacement BuildLabel(const GameConfig::TableSurface& surface, int row, int col,
-                                     int colSpan, const std::string& text);
+    LabelPlacement BuildLabel(const GameConfig::TableSurface& surface, int row, int col,
+                              int colSpan, const std::string& text);
+
+    // Textur eines Beschriftungstextes, bei Bedarf erzeugt. Der Inhalt haengt NUR am Text - die
+    // Groesse auf dem Pult entsteht erst beim Zeichnen ueber die Eckpunkte des Quads. Deshalb
+    // teilen sich alle gleich beschrifteten Elemente eine Textur: auf einem vollen Pult kommt
+    // "BTR" oder "EIN" dutzendfach vor, und das Rendern bei LabelFontSizePx mit Fake-Bold ist
+    // teuer genug, dass es die Ladezeit sonst spuerbar verlaengert.
+    Texture2D GetOrBuildLabelTexture(const std::string& text);
 
     // Berechnet die vier Eckpunkte eines Rahmens auf `surface`, der den Bruchteils-Bereich
     // [tuStart,tuEnd] x [tvStart,tvEnd] umschliesst (gleiche tu/tv-Konvention wie
@@ -232,6 +248,9 @@ private:
     // gueltig, daher duerfen TypeModels/Placement-Eintraege sicher auf hier gespeicherte
     // LoadedModels zeigen.
     std::unordered_map<std::string, LoadedModel> loadedModels;
+    // Beschriftungstext -> Textur. Mehrere LabelPlacements zeigen auf dieselbe Textur, freigegeben
+    // wird sie deshalb genau einmal hier und nicht ueber die Platzierungen.
+    std::unordered_map<std::string, Texture2D> labelTextures;
     std::unordered_map<std::string, TypeModels> modelsByType;
     ElementRegistry registry;
 

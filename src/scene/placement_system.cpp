@@ -64,6 +64,15 @@ int ReadPositiveInt(const json& parent, const char* key, int fallback) {
     return value > 0 ? value : fallback;
 }
 
+// Anteil jeder Kante, den das Gehaeuse verdeckt. Negative Werte oder Werte, die die Oeffnung
+// zusammenziehen wuerden, werden auf den gueltigen Bereich begrenzt.
+float ReadInset(const json& screenJson) {
+    if (!screenJson.contains("inset") || !screenJson["inset"].is_number()) {
+        return GameConfig::ScreenDefaultInset;
+    }
+    return std::clamp(screenJson["inset"].get<float>(), 0.0f, GameConfig::ScreenMaxInset);
+}
+
 // Markierungsfarbe eines Bildschirms: [r, g, b] mit Werten 0..255.
 Color ReadMarkerColor(const json& screenJson) {
     if (!screenJson.contains("marker") || !screenJson["marker"].is_array() ||
@@ -92,8 +101,12 @@ bool SameRGB(Color a, Color b) {
 // Spaltenbreite laufen, nicht die Zeilenhoehe hinauf. "down" liegt entlang +uAxis, damit der
 // Text so herum steht, wie ein Spieler ihn vor der geneigten Flaeche stehend liest (per
 // Screenshot-Test ermittelt, siehe Kommentar in PlacementSystem::Draw).
-PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
-    const GameConfig::TableSurface& surface, int row, int col, int colSpan, const std::string& text) {
+Texture2D PlacementSystem::GetOrBuildLabelTexture(const std::string& text) {
+    auto found = labelTextures.find(text);
+    if (found != labelTextures.end()) {
+        return found->second;
+    }
+
     int pixelWidth = MeasureText(text.c_str(), GameConfig::LabelFontSizePx) + 2 * GameConfig::LabelTexturePadding;
     int pixelHeight = GameConfig::LabelFontSizePx + 2 * GameConfig::LabelTexturePadding;
 
@@ -122,6 +135,16 @@ PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
     // gestauchten Richtung ab und behaelt die Schaerfe in der anderen Richtung.
     SetTextureFilter(texture, TEXTURE_FILTER_ANISOTROPIC_16X);
     UnloadImage(image);
+
+    labelTextures[text] = texture;
+    return texture;
+}
+
+PlacementSystem::LabelPlacement PlacementSystem::BuildLabel(
+    const GameConfig::TableSurface& surface, int row, int col, int colSpan, const std::string& text) {
+    Texture2D texture = GetOrBuildLabelTexture(text);
+    int pixelWidth = texture.width;
+    int pixelHeight = texture.height;
 
     // Ein mehrere Spalten breites Element bekommt auch ein entsprechend breiteres Textfeld,
     // mittig unter dem gesamten Block.
@@ -170,8 +193,8 @@ PlacementSystem::~PlacementSystem() {
     for (auto& [path, loaded] : loadedModels) {
         UnloadModel(loaded.model);
     }
-    for (auto& label : labelPlacements) {
-        UnloadTexture(label.texture);
+    for (auto& [text, texture] : labelTextures) {
+        UnloadTexture(texture);
     }
     for (auto& screen : screens) {
         UnloadRenderTexture(screen.target);
@@ -209,7 +232,7 @@ PlacementSystem::LoadedModel& PlacementSystem::GetOrLoadModel(const std::string&
     return loadedModels.emplace(path, loaded).first->second;
 }
 
-void PlacementSystem::PrepareScreenMesh(LoadedModel& loaded, Color marker) {
+void PlacementSystem::PrepareScreenMesh(LoadedModel& loaded, Color marker, float inset) {
     if (loaded.screenMesh >= 0) {
         return;
     }
@@ -257,9 +280,19 @@ void PlacementSystem::PrepareScreenMesh(LoadedModel& loaded, Color marker) {
         float spanX = std::max(maxX - minX, 0.0001f);
         float spanZ = std::max(maxZ - minZ, 0.0001f);
 
+        // Der Rand, den das Gehaeuse verdeckt, wird aus dem Wertebereich herausgerechnet: die
+        // Texturkoordinaten 0 und 1 liegen dann nicht mehr auf den Kanten der Flaeche, sondern
+        // auf der Innenkante des Rahmens. Der Inhalt sitzt damit vollstaendig in der sichtbaren
+        // Oeffnung. Ausserhalb davon laufen die Koordinaten ins Negative bzw. ueber 1 - das ist
+        // der ohnehin verdeckte Bereich, den die geklemmte Textur mit ihren Randpixeln fuellt.
+        float randX = spanX * inset;
+        float randZ = spanZ * inset;
+        float sichtbarX = std::max(spanX - 2.0f * randX, 0.0001f);
+        float sichtbarZ = std::max(spanZ - 2.0f * randZ, 0.0001f);
+
         for (int v = 0; v < mesh.vertexCount; v++) {
-            mesh.texcoords[v * 2 + 0] = (mesh.vertices[v * 3 + 2] - minZ) / spanZ;
-            mesh.texcoords[v * 2 + 1] = (mesh.vertices[v * 3 + 0] - minX) / spanX;
+            mesh.texcoords[v * 2 + 0] = (mesh.vertices[v * 3 + 2] - minZ - randZ) / sichtbarZ;
+            mesh.texcoords[v * 2 + 1] = (mesh.vertices[v * 3 + 0] - minX - randX) / sichtbarX;
         }
         UpdateMeshBuffer(mesh, 1, mesh.texcoords, mesh.vertexCount * 2 * static_cast<int>(sizeof(float)), 0);
         return;
@@ -342,8 +375,9 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
             if (typeEntry.contains("screen")) {
                 const auto& screenJson = typeEntry["screen"];
                 Color marker = ReadMarkerColor(screenJson);
+                float inset = ReadInset(screenJson);
                 for (LoadedModel* loaded : modelsByState) {
-                    PrepareScreenMesh(*loaded, marker);
+                    PrepareScreenMesh(*loaded, marker, inset);
                 }
                 typeModels.hasScreen = true;
                 typeModels.screenWidth = ReadPositiveInt(screenJson, "width", GameConfig::ScreenDefaultWidth);
@@ -434,6 +468,16 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
                     cellsFree = false;
                     break;
                 }
+                // Sperrzone an den Pultecken: dort ueberlappen sich zwei Pultflaechen in der
+                // Draufsicht (siehe GameConfig::CellBlocked). Ein Element wuerde mit dem
+                // Nachbartisch verschmelzen oder ueber dessen Kante ragen.
+                if (GameConfig::CellBlocked(section, cellRow, cellCol)) {
+                    TraceLog(LOG_WARNING, "PLATZIERUNG: '%s' uebersprungen - Zelle (%d, %d, %d) "
+                             "liegt in der Sperrzone an der Pultecke", id.c_str(),
+                             static_cast<int>(section), cellRow, cellCol);
+                    cellsFree = false;
+                    break;
+                }
             }
             if (!cellsFree) {
                 continue;
@@ -486,8 +530,19 @@ void PlacementSystem::LoadFromDirectory(const char* dirPath, Shader shader) {
             int screenIndex = -1;
             if (typeModels.hasScreen && initialModel.screenMesh >= 0) {
                 screenIndex = static_cast<int>(screens.size());
-                screens.push_back(DisplayScreen{
-                    id, LoadRenderTexture(typeModels.screenWidth, typeModels.screenHeight) });
+                RenderTexture2D target = LoadRenderTexture(
+                    typeModels.screenWidth * GameConfig::ScreenSupersample,
+                    typeModels.screenHeight * GameConfig::ScreenSupersample);
+                // Bilinear statt POINT: die Displaytextur wird im Spiel deutlich verkleinert
+                // dargestellt, und ohne Filterung greift die Grafikkarte pro Bildschirmpixel
+                // genau ein Texel heraus - duenne Schriftstriche verschwinden dabei zufaellig.
+                SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
+                // Geklemmt statt gekachelt: bei gesetztem "inset" laufen die Texturkoordinaten
+                // im verdeckten Randbereich ueber 0..1 hinaus. Ohne Klemmung wuerde dort eine
+                // zweite Kopie des Displayinhalts liegen, die an einem schlecht sitzenden
+                // Rahmen hervorlugen koennte.
+                SetTextureWrap(target.texture, TEXTURE_WRAP_CLAMP);
+                screens.push_back(DisplayScreen{ id, target });
             }
 
             registry.RegisterInstance(id, typeId, initialStateIndex);
@@ -586,7 +641,16 @@ void PlacementSystem::RenderDisplays(const std::function<void(const std::string&
     for (const auto& screen : screens) {
         BeginTextureMode(screen.target);
         ClearBackground(GameConfig::ScreenClearColor);
-        drawContent(screen.id, screen.target.texture.width, screen.target.texture.height);
+        // Das Renderziel ist um GameConfig::ScreenSupersample groesser als die logische
+        // Aufloesung. Die Skalierungsmatrix rechnet die Zeichenbefehle hoch, sodass das Skript
+        // unveraendert in logischen Pixeln arbeitet und trotzdem ueberabgetastet gerendert wird.
+        rlPushMatrix();
+        rlScalef(static_cast<float>(GameConfig::ScreenSupersample),
+                 static_cast<float>(GameConfig::ScreenSupersample), 1.0f);
+        drawContent(screen.id,
+                    screen.target.texture.width / GameConfig::ScreenSupersample,
+                    screen.target.texture.height / GameConfig::ScreenSupersample);
+        rlPopMatrix();
         EndTextureMode();
     }
 }

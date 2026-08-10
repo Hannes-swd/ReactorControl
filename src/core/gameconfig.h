@@ -239,6 +239,60 @@ inline Vector3 GridCellCenter(const TableSurface& surface, int row, int col) {
     return GridBlockCenter(surface, row, col, 1, 1);
 }
 
+// --- Sperrzonen an den Pultecken --------------------------------------------------------------
+//
+// Die drei Pultflaechen sind Parallelogramme, die in der DRAUFSICHT ueberlappen: die Ecken der
+// beiden Fluegel ragen ein Stueck ueber die Mittelflaeche und umgekehrt. In diesem Bereich
+// liegen Gridzellen unter dem Nachbartisch oder ueber dessen Kante - platzierte Elemente
+// stecken dort ineinander oder schweben in der Luft.
+//
+// Wo genau das ist, wird nicht von Hand eingetragen, sondern hier ausgerechnet: eine Zelle ist
+// gesperrt, wenn ihr Mittelpunkt in der Draufsicht auch auf einer ANDEREN Flaeche liegt. Aendert
+// sich die Tischgeometrie, verschiebt sich die Sperrzone automatisch mit.
+
+// Zerlegt den Punkt p in der Draufsicht (nur X/Z) in die Flaechenkoordinaten a (entlang uAxis)
+// und b (entlang vAxis). false, wenn die Flaeche in der Draufsicht entartet ist.
+inline bool PlanCoords(const TableSurface& surface, Vector3 p, float& a, float& b) {
+    float ux = surface.uAxis.x, uz = surface.uAxis.z;
+    float vx = surface.vAxis.x, vz = surface.vAxis.z;
+    float det = ux * vz - uz * vx;
+    if (fabsf(det) < 1e-6f) {
+        return false;
+    }
+    float dx = p.x - surface.origin.x;
+    float dz = p.z - surface.origin.z;
+    a = (dx * vz - dz * vx) / det;
+    b = (ux * dz - uz * dx) / det;
+    return true;
+}
+
+// true, wenn p in der Draufsicht innerhalb dieser Flaeche liegt.
+inline bool CoversInPlan(const TableSurface& surface, Vector3 p) {
+    float a = 0.0f, b = 0.0f;
+    if (!PlanCoords(surface, p, a, b)) {
+        return false;
+    }
+    return a >= 0.0f && a <= 1.0f && b >= 0.0f && b <= 1.0f;
+}
+
+// true, wenn die Zelle (row, col) auf `section` von einer anderen Pultflaeche ueberdeckt wird
+// und deshalb nicht belegt werden darf.
+inline bool CellBlocked(size_t section, int row, int col) {
+    if (section >= TableSurfaceCount) {
+        return true;
+    }
+    Vector3 p = GridCellCenter(TableSurfaces[section], row, col);
+    for (size_t other = 0; other < TableSurfaceCount; other++) {
+        if (other != section && CoversInPlan(TableSurfaces[other], p)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Farbe, in der gesperrte Zellen im Grid markiert werden (siehe TableCursor).
+constexpr Color BlockedCellColor = { 200, 60, 50, 255 };
+
 // Darstellung der Gruppen-Textfelder (siehe PlacementSystem): der Text wird einmalig beim
 // Laden auf eine Textur gerendert und dann als flaches Quad IN der Label-Zeile gezeichnet -
 // liegt also genau wie die Button-Modelle schraeg auf der geneigten Pultflaeche, statt immer
@@ -273,6 +327,22 @@ constexpr Color ScreenMarkerColor = { 255, 0, 255, 255 };
 constexpr int ScreenDefaultWidth = 256;
 constexpr int ScreenDefaultHeight = 256;
 constexpr Color ScreenClearColor = BLACK;
+
+// Anteil JEDER Kante der Bildschirmflaeche, der im Modell vom Gehaeuse verdeckt wird. Die
+// Flaeche im .glb reicht in der Regel unter den Rahmen; ohne Korrektur spannt sich die Textur
+// ueber die GESAMTE Flaeche und wird oben, unten und seitlich angeschnitten. Ein Inset > 0
+// staucht sie stattdessen in die sichtbare Oeffnung, sodass der volle Displayinhalt zu sehen
+// ist. Pro Typ ueberschreibbar ("inset" unter "screen", siehe placement_system.h).
+constexpr float ScreenDefaultInset = 0.0f;
+constexpr float ScreenMaxInset = 0.4f; // mehr wuerde die Oeffnung auf null zusammenziehen
+
+// Ueberabtastung der Displaytexturen: das Renderziel ist um diesen Faktor groesser als die
+// Aufloesung, in der das Skript zeichnet. Beim Verkleinern auf die Bildschirmgroesse mittelt
+// die Grafikkarte dann ueber mehrere Texel statt eines herauszugreifen - dasselbe Prinzip wie
+// bei den Beschriftungen (siehe BuildLabel), nur dass eine Displaytextur jeden Frame neu
+// entsteht und deshalb keine Mipmaps bekommen kann. Das Skript merkt davon nichts, es zeichnet
+// weiter in der logischen Aufloesung (screen.width/height).
+constexpr int ScreenSupersample = 3;
 
 // Strichstaerke fuer screen.line(). Fest, weil 1px auf einer Displaytextur, die im Spiel stark
 // verkleinert dargestellt wird, praktisch verschwindet.

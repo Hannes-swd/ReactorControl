@@ -2,12 +2,9 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>ReactorControl – Technische Dokumentation</title>
+<title>ReactorControl – Handbuch</title>
 <style>
-  @page {
-    size: A4;
-    margin: 22mm 20mm 20mm 20mm;
-  }
+  @page { size: A4; margin: 20mm 20mm 18mm 20mm; }
 
   :root {
     --text: #1b1f24;
@@ -15,10 +12,10 @@
     --accent: #1f4e79;
     --rule: #c9d1d9;
     --code-bg: #f2f4f6;
+    --rot: #b32a24;
   }
 
   * { box-sizing: border-box; }
-
   html { font-size: 10.5pt; }
 
   body {
@@ -26,262 +23,1005 @@
     font-family: "Segoe UI", "Calibri", system-ui, sans-serif;
     color: var(--text);
     line-height: 1.55;
-    counter-reset: h1;
+    counter-reset: kap;
   }
 
-  /* --- Titelblock ------------------------------------------------------- */
+  /* ---------- Titelblatt ---------- */
 
-  .titel {
-    border-bottom: 2.5pt solid var(--accent);
-    padding-bottom: 10pt;
-    margin-bottom: 26pt;
+  .titelblatt {
+    height: 247mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-top: 3pt solid var(--accent);
+    border-bottom: 3pt solid var(--accent);
+    break-after: page;
+    page-break-after: always;
   }
 
-  .titel h1 {
-    font-size: 25pt;
-    line-height: 1.15;
-    margin: 0;
-    color: var(--accent);
-    letter-spacing: -0.01em;
+  .titelblatt .werk { font-size: 9pt; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  /* Titel und Inhaltsverzeichnis duerfen die Kapitelzaehlung nicht anfassen, sonst faengt
+     Kapitel 1 im Text bei 2 an und stimmt nicht mehr mit dem Verzeichnis ueberein. */
+  .titelblatt h1 {
+    font-size: 34pt; margin: 6pt 0 0; color: var(--accent); letter-spacing: -0.015em;
+    counter-increment: none;
+    border-bottom: none;
+    padding-bottom: 0;
+    break-before: auto;
+    page-break-before: auto;
+  }
+  .titelblatt h1::before { content: none; }
+  .titelblatt .untertitel { font-size: 15pt; color: var(--muted); margin-top: 4pt; }
+  .titelblatt .fuss { margin-top: 30pt; font-size: 9pt; color: var(--muted); line-height: 1.8; }
+
+  /* ---------- Inhaltsverzeichnis ---------- */
+
+  .inhalt { break-after: page; page-break-after: always; }
+
+  .inhalt > h2 {
+    font-size: 16pt; color: var(--accent); margin: 0 0 14pt;
+    padding-bottom: 4pt; border-bottom: 1pt solid var(--rule);
     counter-increment: none;
   }
+  .inhalt > h2::before { content: none; }
 
-  .titel h1::before { content: none; }
+  ol.toc { list-style: none; margin: 0; padding: 0; counter-reset: t1; }
+  ol.toc ol { list-style: none; margin: 0; padding-left: 14pt; }
 
-  .titel .untertitel {
-    font-size: 13pt;
-    color: var(--muted);
-    margin-top: 5pt;
-  }
+  ol.toc > li { counter-increment: t1; counter-reset: t2; margin-top: 8pt; }
+  ol.toc > li > a { font-weight: 600; font-size: 11pt; color: var(--accent); }
+  ol.toc > li > a::before { content: counter(t1) "  "; color: var(--muted); }
 
-  .meta {
-    margin-top: 12pt;
-    font-size: 8.5pt;
-    color: var(--muted);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-  }
+  ol.toc > li > ol > li { counter-increment: t2; counter-reset: t3; margin-top: 1.5pt; }
+  ol.toc > li > ol > li > a::before { content: counter(t1) "." counter(t2) "  "; color: var(--muted); }
 
-  /* --- Überschriften ---------------------------------------------------- */
+  ol.toc > li > ol > li > ol > li { counter-increment: t3; }
+  ol.toc > li > ol > li > ol > li > a { color: var(--muted); font-size: 9.5pt; }
+  ol.toc > li > ol > li > ol > li > a::before { content: counter(t1) "." counter(t2) "." counter(t3) "  "; }
+
+  ol.toc a { text-decoration: none; color: var(--text); }
+
+  /* ---------- Überschriften ---------- */
 
   h1 {
-    counter-increment: h1;
-    counter-reset: h2;
-    font-size: 15pt;
+    counter-increment: kap;
+    counter-reset: absch;
+    font-size: 19pt;
     color: var(--accent);
-    margin: 26pt 0 8pt;
-    padding-bottom: 3pt;
-    border-bottom: 0.75pt solid var(--rule);
+    margin: 0 0 12pt;
+    padding-bottom: 5pt;
+    border-bottom: 1.5pt solid var(--accent);
+    break-before: page;
+    page-break-before: always;
     break-after: avoid;
     page-break-after: avoid;
   }
-
-  h1::before {
-    content: counter(h1) ". ";
-    color: var(--muted);
-    font-weight: 600;
-  }
+  h1::before { content: counter(kap) "  "; color: var(--muted); }
 
   h2 {
-    counter-increment: h2;
-    font-size: 11.5pt;
-    margin: 16pt 0 5pt;
+    counter-increment: absch;
+    counter-reset: unter;
+    font-size: 13pt;
+    color: var(--accent);
+    margin: 18pt 0 6pt;
     break-after: avoid;
     page-break-after: avoid;
   }
+  h2::before { content: counter(kap) "." counter(absch) "  "; color: var(--muted); font-weight: 600; }
 
-  h2::before {
-    content: counter(h1) "." counter(h2) "  ";
-    color: var(--muted);
-    font-weight: 600;
+  h3 {
+    counter-increment: unter;
+    font-size: 11pt;
+    margin: 13pt 0 4pt;
+    break-after: avoid;
+    page-break-after: avoid;
   }
+  h3::before { content: counter(kap) "." counter(absch) "." counter(unter) "  "; color: var(--muted); font-weight: 600; }
 
-  p { margin: 0 0 8pt; orphans: 3; widows: 3; }
+  p { margin: 0 0 7pt; orphans: 3; widows: 3; }
+  ul, ol.schritte { margin: 0 0 8pt; padding-left: 18pt; }
+  li { margin-bottom: 2.5pt; }
+  ol.schritte li { margin-bottom: 4pt; }
 
   code {
     font-family: Consolas, "Cascadia Mono", monospace;
-    font-size: 0.9em;
-    background: var(--code-bg);
-    padding: 0.5pt 3pt;
-    border-radius: 2pt;
-    white-space: nowrap;
+    font-size: 0.9em; background: var(--code-bg);
+    padding: 0.5pt 3pt; border-radius: 2pt; white-space: nowrap;
   }
-
   strong { font-weight: 600; }
 
-  /* --- Tabelle ---------------------------------------------------------- */
+  /* ---------- Tabellen ---------- */
 
   table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 10pt 0 12pt;
-    font-size: 9.5pt;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    border-collapse: collapse; width: 100%;
+    margin: 9pt 0 12pt; font-size: 9.5pt;
+    break-inside: avoid; page-break-inside: avoid;
   }
-
   caption {
-    caption-side: bottom;
-    text-align: left;
-    font-size: 8.5pt;
-    color: var(--muted);
-    padding-top: 5pt;
+    caption-side: bottom; text-align: left; font-size: 8.5pt;
+    color: var(--muted); padding-top: 4pt;
   }
-
-  th, td {
-    border-bottom: 0.5pt solid var(--rule);
-    padding: 4.5pt 8pt;
-    text-align: left;
-    vertical-align: top;
-  }
-
+  th, td { border-bottom: 0.5pt solid var(--rule); padding: 4pt 8pt; text-align: left; vertical-align: top; }
   thead th {
-    border-bottom: 1pt solid var(--accent);
-    font-size: 8.5pt;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--muted);
+    border-bottom: 1pt solid var(--accent); font-size: 8.5pt;
+    text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
   }
+  td.zahl { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.kurz { font-family: Consolas, monospace; font-weight: 600; white-space: nowrap; }
 
-  td.zahl { text-align: right; font-variant-numeric: tabular-nums; width: 14%; }
+  .lampe { display: inline-block; width: 8pt; height: 8pt; border-radius: 50%; margin-right: 4pt; vertical-align: -0.5pt; border: 0.5pt solid rgba(0,0,0,0.25); }
+  .l-gruen  { background: #35b866; }
+  .l-orange { background: #e8961e; }
+  .l-rot    { background: #d8483f; }
+  .l-weiss  { background: #e8eaec; }
 
-  tr.kritisch td { background: #fdf3f2; }
-  tr.gut td      { background: #f2f8f3; }
+  /* ---------- Kästen ---------- */
 
-  /* --- Merkkasten ------------------------------------------------------- */
-
-  .hinweis {
-    border-left: 2.5pt solid var(--accent);
-    background: #f5f8fb;
-    padding: 8pt 12pt;
-    margin: 12pt 0;
-    break-inside: avoid;
-    page-break-inside: avoid;
+  .hinweis, .warnung {
+    padding: 8pt 12pt; margin: 10pt 0;
+    break-inside: avoid; page-break-inside: avoid;
   }
-
-  .hinweis p:last-child { margin-bottom: 0; }
-
-  .hinweis .kopf {
-    font-size: 8.5pt;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--accent);
-    font-weight: 600;
-    margin-bottom: 3pt;
+  .hinweis { border-left: 2.5pt solid var(--accent); background: #f5f8fb; }
+  .warnung { border-left: 2.5pt solid var(--rot);    background: #fdf4f3; }
+  .hinweis p:last-child, .warnung p:last-child { margin-bottom: 0; }
+  .kopf {
+    font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 600; margin-bottom: 3pt;
   }
+  .hinweis .kopf { color: var(--accent); }
+  .warnung .kopf { color: var(--rot); }
 
-  /* --- Änderungsliste --------------------------------------------------- */
+  /* ---------- Abbildungsplatzhalter ---------- */
 
-  .aenderung {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin-bottom: 12pt;
+  .abb {
+    border: 1pt dashed var(--rule); background: #fafbfc;
+    padding: 18pt 12pt; margin: 10pt 0 12pt; text-align: center;
+    break-inside: avoid; page-break-inside: avoid;
   }
+  .abb .platz { font-size: 9pt; color: var(--muted); font-style: italic; }
+  .abb .bu { font-size: 8.5pt; color: var(--muted); margin-top: 8pt; text-align: left; }
+  .abb .bu strong { color: var(--text); }
 
-  .ort {
-    font-family: Consolas, "Cascadia Mono", monospace;
-    font-size: 8.5pt;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 3pt;
-  }
+  .ort { font-family: Consolas, monospace; font-size: 8.5pt; color: var(--muted); display: block; margin-bottom: 3pt; }
 </style>
 </head>
 <body>
 
-<div class="titel">
+<!-- ================= TITELBLATT ================= -->
+<div class="titelblatt">
+  <div class="werk">Kernkraftwerk – Doppelblockwarte</div>
   <h1>ReactorControl</h1>
-  <div class="untertitel">Technische Dokumentation: Lesbarkeit der Pult-Beschriftungen</div>
-  <div class="meta">Stand 9. August 2026 &nbsp;·&nbsp; C++ / raylib / Lua</div>
+  <div class="untertitel">Handbuch für die Bedienung der Blockwarte</div>
+  <div class="fuss">
+    Ausgabe 3 &nbsp;·&nbsp; Stand 10. August 2026<br>
+    Gültig für die Doppelblockanlage: 310 Bedienelemente auf drei Pultflächen<br>
+    Block 1 (linker Flügel) · Gemeinsame Anlagenteile (Mitte) · Block 2 (rechter Flügel)
+  </div>
 </div>
 
-<h1>Das Problem</h1>
+<div class="inhalt">
+  <h2>Inhaltsverzeichnis</h2>
+  <ol class="toc">
+    <li><a href="#k1">Über dieses Handbuch</a>
+      <ol>
+        <li><a href="#k1-1">Aufbau der Warte</a></li>
+        <li><a href="#k1-2">Bedienkonzept</a>
+          <ol>
+            <li><a href="#k1-2-1">Aufbau eines Antriebsbausteins</a></li>
+            <li><a href="#k1-2-2">Bedeutung der Lampenfarben</a></li>
+            <li><a href="#k1-2-3">Anlagenkennzeichen</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#k2">Gemeinsame Anlagenteile</a>
+      <ol>
+        <li><a href="#k2-1">Stromversorgung</a></li>
+        <li><a href="#k2-2">Kühlwasser, Kondensator und Vakuum</a></li>
+        <li><a href="#k2-3">Zwischenkühlkreis und Komponentenkühlung</a></li>
+        <li><a href="#k2-4">Nebenanlagen und Überwachung</a></li>
+        <li><a href="#k2-5">Fehlerbehebung</a></li>
+      </ol>
+    </li>
+    <li><a href="#k3">Blockfreigabe und Schutz</a>
+      <ol>
+        <li><a href="#k3-1">Steuerung</a>
+          <ol>
+            <li><a href="#k3-1-1">Schlüsselschalter</a></li>
+            <li><a href="#k3-1-2">NOT-AUS des Blocks</a></li>
+            <li><a href="#k3-1-3">Schnellabschaltung und Rücksetzung</a></li>
+          </ol>
+        </li>
+        <li><a href="#k3-2">Rückmeldungen</a></li>
+        <li><a href="#k3-3">Fehlerbehebung</a></li>
+      </ol>
+    </li>
+    <li><a href="#k4">Reaktor</a>
+      <ol>
+        <li><a href="#k4-1">Stabgruppen</a></li>
+        <li><a href="#k4-2">Regelstäbe</a></li>
+        <li><a href="#k4-3">Boreinspeisung</a></li>
+        <li><a href="#k4-4">Rückmeldungen</a></li>
+        <li><a href="#k4-5">Fehlerbehebung</a></li>
+      </ol>
+    </li>
+    <li><a href="#k5">Primärkreis</a>
+      <ol>
+        <li><a href="#k5-1">Hauptkühlmittelpumpen</a></li>
+        <li><a href="#k5-2">Druckhalter</a></li>
+        <li><a href="#k5-3">Sicherheits- und Hilfssysteme</a></li>
+        <li><a href="#k5-4">Rückmeldungen</a></li>
+        <li><a href="#k5-5">Fehlerbehebung</a></li>
+      </ol>
+    </li>
+    <li><a href="#k6">Sekundärkreis</a>
+      <ol>
+        <li><a href="#k6-1">Dampferzeuger und Speisewasser</a></li>
+        <li><a href="#k6-2">Frischdampf und Umleitstation</a></li>
+        <li><a href="#k6-3">Fehlerbehebung</a></li>
+      </ol>
+    </li>
+    <li><a href="#k7">Turbosatz und Netz</a>
+      <ol>
+        <li><a href="#k7-1">Turbine</a></li>
+        <li><a href="#k7-2">Generator</a></li>
+        <li><a href="#k7-3">Netzschalter und Synchronisation</a></li>
+        <li><a href="#k7-4">Fehlerbehebung</a></li>
+      </ol>
+    </li>
+    <li><a href="#k8">Anzeigen</a>
+      <ol>
+        <li><a href="#k8-1">Die Statusleisten</a></li>
+        <li><a href="#k8-2">Die zehn Displays</a></li>
+        <li><a href="#k8-3">Meldungen, Quittieren, Lampentest</a></li>
+      </ol>
+    </li>
+    <li><a href="#k9">Betrieb</a>
+      <ol>
+        <li><a href="#k9-1">Anfahren eines Blocks</a></li>
+        <li><a href="#k9-2">Leistungsbetrieb</a></li>
+        <li><a href="#k9-3">Den zweiten Block zuschalten</a></li>
+        <li><a href="#k9-4">Abfahren</a></li>
+        <li><a href="#k9-5">Störfälle</a>
+          <ol>
+            <li><a href="#k9-5-1">Schnellabschaltung</a></li>
+            <li><a href="#k9-5-2">Lastabwurf</a></li>
+            <li><a href="#k9-5-3">Ausfall der Stromversorgung</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#k10">Technische Hinweise</a>
+      <ol>
+        <li><a href="#k10-1">Sperrzonen an den Pultecken</a></li>
+        <li><a href="#k10-2">Lesbarkeit der Beschriftungen</a></li>
+        <li><a href="#k10-3">Platzhalter-Physik</a></li>
+      </ol>
+    </li>
+  </ol>
+</div>
 
-<p>Die Textfelder unter den Bedienelementen – die Beschriftungen von Buttons, Lampen und Displays – waren im Spiel kaum zu entziffern. Zunächst wirkte die Schrift <em>zerfressen</em>, einzelne Striche fehlten ganz; nach einer ersten Korrektur dann <em>verschwommen</em>. Dahinter stecken drei voneinander unabhängige Ursachen, die getrennt betrachtet und getrennt behoben werden müssen.</p>
+<h1 id="k1">Über dieses Handbuch</h1>
 
-<p>Betroffen sind ausschließlich die Beschriftungen, nicht die Displayinhalte. Displays zeichnen in eine eigene Textur mit fester Pixelauflösung und sind von dem Problem nicht berührt.</p>
+<p>Dieses Handbuch beschreibt die Bedienung der Doppelblockwarte von ReactorControl. Die Anlage besteht aus <strong>zwei baugleichen Blöcken</strong> mit gemeinsamen Hilfsanlagen. Beide Blöcke lassen sich unabhängig voneinander anfahren, abfahren und ans Netz legen.</p>
 
-<h1>Ursache 1: Die Schriftgröße hängt an der Wortlänge</h1>
+<p>Die Gliederung folgt den Anlagenteilen. Zu jedem Teil gehören <em>Steuerung</em>, <em>Rückmeldungen</em> und <em>Fehlerbehebung</em>. Wer im Betrieb eine Störung sucht, springt direkt in das Fehlerbehebungs-Kapitel des betroffenen Anlagenteils. Da beide Blöcke identisch aufgebaut sind, gilt jede Beschreibung für beide.</p>
 
-<p>Eine Beschriftung wird beim Laden einmalig als Textur gerendert und anschließend als flaches Viereck in der Label-Zeile auf die geneigte Pultfläche gelegt. Die Skalierung berechnet <code>PlacementSystem::BuildLabel</code> nach der Regel „passt in die Breite <em>und</em> in die Höhe“. Es gewinnt also immer die engere der beiden Bedingungen.</p>
+<p>Die Einträge im Inhaltsverzeichnis sind anklickbar. Zusätzlich steht die Gliederung im Lesezeichenbereich des PDF-Betrachters.</p>
 
-<p>Auf der Mittelfläche ist eine Gridspalte 0,199 Welteinheiten breit und die Label-Zeile 0,100 Welteinheiten hoch – ein Seitenverhältnis von 2:1. Sobald der gerenderte Text ein größeres Seitenverhältnis hat als 2:1, begrenzt die Breite, und die zur Verfügung stehende Zeilenhöhe bleibt ungenutzt. Das ist bei fast jedem Wort der Fall.</p>
-
-<p>Gemessen an den tatsächlich erzeugten Texturen ergibt sich für einspaltige Elemente:</p>
+<h2 id="k1-1">Aufbau der Warte</h2>
 
 <table>
-  <caption>Gemessen an den Texturgrößen beim Laden, Mittelfläche, einspaltige Elemente.</caption>
-  <thead>
-    <tr><th>Beschriftung</th><th class="zahl">Zeichen</th><th class="zahl">Genutzte Zeilenhöhe</th></tr>
-  </thead>
+  <caption>Aufteilung der 310 Bedienelemente auf die drei Pultflächen.</caption>
+  <thead><tr><th>Pultfläche</th><th>Inhalt</th><th class="zahl">Elemente</th><th>Kapitel</th></tr></thead>
   <tbody>
-    <tr class="gut"><td>BTR</td><td class="zahl">3</td><td class="zahl">100 %</td></tr>
-    <tr><td>QUIT</td><td class="zahl">4</td><td class="zahl">86 %</td></tr>
-    <tr><td>STOER, START</td><td class="zahl">5</td><td class="zahl">62 %</td></tr>
-    <tr><td>L-TEST</td><td class="zahl">6</td><td class="zahl">55 %</td></tr>
-    <tr><td>BETRIEB, NOT-AUS, WARNUNG</td><td class="zahl">7</td><td class="zahl">47 %</td></tr>
-    <tr class="kritisch"><td>STOERUNG</td><td class="zahl">8</td><td class="zahl">39 %</td></tr>
+    <tr><td><strong>Links</strong></td><td>Block 1 vollständig: Reaktor, Primärkreis, Sicherheitssysteme, Sekundärkreis, Turbosatz</td><td class="zahl">87</td><td>4 – 7</td></tr>
+    <tr><td><strong>Mitte</strong></td><td>Gemeinsame Anlagenteile: Stromversorgung, Kühlwasser, Nebenanlagen, Blockfreigaben, Netzschalter, Hauptanzeigen, Statusleisten</td><td class="zahl">136</td><td>2, 3, 8</td></tr>
+    <tr><td><strong>Rechts</strong></td><td>Block 2 vollständig, baugleich zu Block 1</td><td class="zahl">87</td><td>4 – 7</td></tr>
   </tbody>
 </table>
 
-<p>Die praktische Grenze liegt damit bei <strong>drei Zeichen</strong>. Ausgerechnet „STOERUNG“ – das Wort, auf das es im Störfall ankommt – wird auf 39 % der ohnehin flachen Label-Zeile zusammengedrückt und ist das unleserlichste Element auf dem gesamten Pult.</p>
+<p>Jede Pultfläche trägt <strong>drei Bedienbänder</strong>. Ein Band besteht aus einer Reihe Meldeleuchten und der Tasterreihe darunter.</p>
+
+<div class="abb">
+  <div class="platz">[ Abbildung: Gesamtansicht der Doppelblockwarte ]</div>
+  <div class="bu"><strong>Abbildung 1</strong> — Links Block 1, in der Mitte die gemeinsame Anlagenführung, rechts Block 2.</div>
+</div>
+
+<h2 id="k1-2">Bedienkonzept</h2>
+
+<h3 id="k1-2-1">Aufbau eines Antriebsbausteins</h3>
+
+<p>Jeder schaltbare Antrieb wird nach demselben Muster bedient und ist am Pult durch eine Umrandung zusammengefasst:</p>
+
+<ul>
+  <li><strong>Obere Reihe, linke Leuchte:</strong> das <em>Anlagenkennzeichen</em> — welches System die Gruppe bedient. Leuchtet grün, wenn der Antrieb läuft.</li>
+  <li><strong>Obere Reihe, rechte Leuchte:</strong> Störung beziehungsweise Gegenstellung.</li>
+  <li><strong>Untere Reihe:</strong> zwei getrennte Taster für EIN und AUS. Es gibt keinen Umschalter, damit im Störfall kein Zweifel über die befohlene Richtung entsteht.</li>
+</ul>
 
 <div class="hinweis">
-  <div class="kopf">Wichtig für die Fehlersuche</div>
-  <p>Die Label-Zeile höher zu machen bringt <strong>nichts</strong>, weil nicht die Höhe begrenzt, sondern die Spaltenbreite. Beschriftungen über mehrspaltigen Elementen – etwa „KUEHLKREIS“ über einem vier Spalten breiten Display – sind aus demselben Grund unauffällig: ihnen steht die vierfache Breite zur Verfügung.</p>
+  <div class="kopf">Grundregel</div>
+  <p>Ein gedrückter Taster bedeutet nicht, dass der Antrieb läuft — der Taster ist ein Befehl, keine Zustandsanzeige. Maßgeblich ist ausschließlich die Meldeleuchte. Bleibt sie nach dem Befehl dunkel, wurde er nicht ausgeführt; die Ursache steht im Fehlerbehebungs-Kapitel der Baugruppe.</p>
 </div>
 
-<h1>Ursache 2: Fehlende Mipmaps</h1>
+<h3 id="k1-2-2">Bedeutung der Lampenfarben</h3>
 
-<p>Eine Textur, die mit <code>LoadTextureFromImage</code> erzeugt wird, besitzt genau eine Detailstufe, und raylib verwendet als Standardfilter <code>POINT</code> (nächster Nachbar). Eine Beschriftungstextur von rund 190 × 52 Pixeln landet auf dem Bildschirm aber auf etwa 25 × 7 Pixeln.</p>
+<table>
+  <caption>Farbcode der Meldeleuchten, anlagenweit einheitlich.</caption>
+  <thead><tr><th>Anzeige</th><th>Bedeutung</th><th>Handlungsbedarf</th></tr></thead>
+  <tbody>
+    <tr><td><span class="lampe l-weiss"></span>weiß (dunkel)</td><td>Zustand liegt nicht vor</td><td>keiner</td></tr>
+    <tr><td><span class="lampe l-gruen"></span>grün</td><td>Betrieb, Sollzustand erreicht</td><td>keiner</td></tr>
+    <tr><td><span class="lampe l-orange"></span>orange</td><td>Warnung oder Gegenstellung (z. B. Ventil ZU)</td><td>beobachten</td></tr>
+    <tr><td><span class="lampe l-rot"></span>rot, dauerhaft</td><td>Störung, bereits quittiert</td><td>Ursache beseitigen</td></tr>
+    <tr><td><span class="lampe l-rot"></span>rot, blinkend</td><td>Störung, noch nicht quittiert</td><td>quittieren, dann Ursache beseitigen</td></tr>
+  </tbody>
+</table>
 
-<p>Die Grafikkarte greift dabei pro Bildschirmpixel genau ein einziges Texel heraus und verwirft die übrigen rund fünfzig. Ob ein dünner Buchstabenstrich sichtbar bleibt, entscheidet damit der Zufall. Deshalb sah die Schrift nicht bloß klein, sondern regelrecht zerfressen aus.</p>
+<h3 id="k1-2-3">Anlagenkennzeichen</h3>
 
-<h1>Ursache 3: Anisotrope Stauchung</h1>
+<p>Die Beschriftungen sind auf drei Zeichen begrenzt (Kapitel 10.2). Diese Tabelle löst sie auf — sie ist die wichtigste Seite dieses Handbuchs für den täglichen Betrieb.</p>
 
-<p>Mipmaps allein lösen das Problem nicht, sondern tauschen es gegen ein anderes ein: Die Schrift wird unscharf statt zerfressen.</p>
+<table>
+  <caption>Anlagenkennzeichen auf der linken Meldeleuchte jeder Bediengruppe.</caption>
+  <thead><tr><th>Kurz</th><th>System</th><th>Kurz</th><th>System</th></tr></thead>
+  <tbody>
+    <tr><td class="kurz">RX</td><td>Reaktor, Regelstäbe</td><td class="kurz">EB</td><td>Eigenbedarf</td></tr>
+    <tr><td class="kurz">SCR</td><td>Schnellabschaltung</td><td class="kurz">NS1 NS2</td><td>Notstromdiesel 1 und 2</td></tr>
+    <tr><td class="kurz">BOR</td><td>Boreinspeisung</td><td class="kurz">BAT</td><td>Batterieversorgung</td></tr>
+    <tr><td class="kurz">G1 G2</td><td>Stabgruppen 1 und 2</td><td class="kurz">SCA SCB</td><td>Schiene A und B</td></tr>
+    <tr><td class="kurz">HK1 HK2</td><td>Hauptkühlmittelpumpen</td><td class="kurz">ZWK</td><td>Zwischenkühlkreis</td></tr>
+    <tr><td class="kurz">DSP</td><td>Druckspeicher</td><td class="kurz">KK1 KK2</td><td>Komponentenkühlung je Block</td></tr>
+    <tr><td class="kurz">HZG SPR</td><td>Druckhalter: Heizung, Sprühen</td><td class="kurz">KW1 KW2</td><td>Hauptkühlwasser je Block</td></tr>
+    <tr><td class="kurz">ABV</td><td>Primäres Abblaseventil</td><td class="kurz">KD1 KD2</td><td>Kondensator je Block</td></tr>
+    <tr><td class="kurz">VOL</td><td>Volumenregelung</td><td class="kurz">VA1 VA2</td><td>Vakuumpumpe je Block</td></tr>
+    <tr><td class="kurz">NK</td><td>Notkühlung</td><td class="kurz">LUE</td><td>Lüftung</td></tr>
+    <tr><td class="kurz">SI1 SI2</td><td>Sicherheitseinspeisung Strang 1, 2</td><td class="kurz">FR1 FR2</td><td>Blockfreigabe je Block</td></tr>
+    <tr><td class="kurz">NAK</td><td>Nachkühlsystem</td><td class="kurz">NZ1 NZ2</td><td>Netzschalter je Block</td></tr>
+    <tr><td class="kurz">SP1 SP2</td><td>Speisewasserpumpen</td><td class="kurz">KUP</td><td>Schaltanlagenkupplung</td></tr>
+    <tr><td class="kurz">NSP</td><td>Notspeisewasser</td><td class="kurz">AKT</td><td>Aktivitätsüberwachung</td></tr>
+    <tr><td class="kurz">FD</td><td>Frischdampfventil</td><td class="kurz">CN1 CN2</td><td>Containment je Block</td></tr>
+    <tr><td class="kurz">BYP</td><td>Umleitstation</td><td class="kurz">LCK</td><td>Leckageüberwachung</td></tr>
+    <tr><td class="kurz">TUR</td><td>Turbine</td><td class="kurz">BRD</td><td>Brandschutz</td></tr>
+    <tr><td class="kurz">GEN</td><td>Generator</td><td class="kurz">WRT</td><td>Wartenklimatisierung</td></tr>
+  </tbody>
+</table>
 
-<p>Der Grund liegt in der Blickgeometrie. Die Beschriftungen liegen flach auf dem geneigten Pult und werden aus flachem Winkel betrachtet. Dadurch werden sie senkrecht wesentlich stärker gestaucht als waagerecht – im Verhältnis von etwa 5:1. OpenGL wählt die Mipmap-Stufe jedoch anhand der <em>stärkeren</em> der beiden Stauchungen aus. Die Stufe, die senkrecht angemessen ist, ist waagerecht viel zu grob, und die Buchstaben verschmieren seitlich.</p>
+<p>Auf den Tastern und der rechten Leuchte stehen die Aktionen und Zustände: <span class="kurz">EIN</span> · <span class="kurz">AUS</span> · <span class="kurz">AUF</span> · <span class="kurz">ZU</span> · <span class="kurz">STR</span> Störung · <span class="kurz">HI</span> Grenzwert überschritten · <span class="kurz">LOW</span> Wert zu niedrig · <span class="kurz">BER</span> bereit · <span class="kurz">RST</span> rücksetzen · <span class="kurz">SYN</span> synchronisierbereit · <span class="kurz">UEB</span> Überdrehzahl · <span class="kurz">ERR</span> erregen · <span class="kurz">QIT</span> quittieren · <span class="kurz">TST</span> Lampentest · <span class="kurz">ISO</span> abriegeln · <span class="kurz">STA</span> Start.</p>
 
-<p>Am deutlichsten trifft das die kleinsten Beschriftungen, weil dort die Stauchung am extremsten ausfällt – also genau die, die ohnehin schon durch Ursache 1 benachteiligt sind.</p>
+<h1 id="k2">Gemeinsame Anlagenteile</h1>
 
-<h1>Umgesetzte Änderungen</h1>
+<p>Die Mittelfläche trägt alles, was beide Blöcke gemeinsam nutzen. <strong>Diese Systeme werden zuerst in Betrieb genommen</strong> — ohne sie lässt sich kein Block anfahren.</p>
 
-<div class="aenderung">
-  <h2>Höhere Renderauflösung der Texturen</h2>
-  <span class="ort">src/core/gameconfig.h</span>
-  <p><code>GameConfig::LabelFontSizePx</code> von 40 auf 96 erhöht. Die Beschriftungstexturen wachsen dadurch von rund 190 × 52 auf etwa 450 × 108 Pixel, sodass beim Verkleinern überhaupt Detail zum Mitteln vorhanden ist.</p>
+<h2 id="k2-1">Stromversorgung</h2>
+
+<p>Die Stromversorgung ist die unterste Stufe der gesamten Anlage. Sie gilt als vorhanden, wenn <strong>gleichzeitig</strong></p>
+
+<ul>
+  <li>mindestens eine Einspeisung läuft — Eigenbedarf <span class="kurz">EB</span> oder Notstromdiesel <span class="kurz">NS1</span> beziehungsweise <span class="kurz">NS2</span> — <em>und</em></li>
+  <li>mindestens eine Schiene zugeschaltet ist — <span class="kurz">SCA</span> oder <span class="kurz">SCB</span>.</li>
+</ul>
+
+<div class="warnung">
+  <div class="kopf">Häufigster Anfängerfehler</div>
+  <p>Eigenbedarf allein genügt nicht. Ohne zugeschaltete Schiene liegt kein Strom an, und <em>jeder</em> Antriebsstart wird abgewiesen. Schalte immer beides: erst die Einspeisung, dann eine Schiene.</p>
 </div>
 
-<div class="aenderung">
-  <h2>Strichstärke angepasst</h2>
-  <span class="ort">src/core/gameconfig.h</span>
-  <p><code>GameConfig::LabelBoldRadius</code> von 2 auf 3 gesetzt. Da die Schriftgröße gleichzeitig von 40 auf 96 stieg, entspricht das einer relativ <em>dünneren</em> Linie: 3,1 % statt 5,0 % der Zeichenhöhe. Zu fette Striche laufen beim Verkleinern innen zu, wodurch Buchstaben wie B, R oder O ihre Innenflächen verlieren.</p>
+<p>Die Batterieversorgung <span class="kurz">BAT</span> und die Schaltanlagenkupplung <span class="kurz">KUP</span> lassen sich unabhängig davon schalten. Einspeisungen, Schienen und Batterie sind die einzigen Systeme, die selbst keinen Strom brauchen — sonst ließen sie sich nie starten.</p>
+
+<h2 id="k2-2">Kühlwasser, Kondensator und Vakuum</h2>
+
+<p>Jeder Block hat seine eigene Kondensationsanlage, bedient wird sie aber von der Mittelfläche. Die drei Stufen bauen aufeinander auf:</p>
+
+<table>
+  <caption>Reihenfolge der Kondensationsanlage. Fällt ein Vorsystem aus, fallen alle darüber liegenden mit ab.</caption>
+  <thead><tr><th>Stufe</th><th>Kennzeichen</th><th>Voraussetzung</th></tr></thead>
+  <tbody>
+    <tr><td>1. Hauptkühlwasser</td><td class="kurz">KW1 / KW2</td><td>Strom</td></tr>
+    <tr><td>2. Kondensator</td><td class="kurz">KD1 / KD2</td><td>Hauptkühlwasser desselben Blocks</td></tr>
+    <tr><td>3. Vakuumpumpe</td><td class="kurz">VA1 / VA2</td><td>Kondensator <em>und</em> Hauptkühlwasser</td></tr>
+  </tbody>
+</table>
+
+<p>Erst wenn die Vakuumpumpe läuft, baut sich das Kondensatorvakuum auf — bis etwa 95 %, über einige Sekunden. Die Turbine lässt sich erst oberhalb von <strong>50 % Vakuum</strong> einschalten. Deshalb gehört diese Kette früh in die Anfahrsequenz.</p>
+
+<h2 id="k2-3">Zwischenkühlkreis und Komponentenkühlung</h2>
+
+<p>Der Zwischenkühlkreis <span class="kurz">ZWK</span> versorgt die Komponentenkühlung beider Blöcke <span class="kurz">KK1</span> und <span class="kurz">KK2</span>. Diese wiederum kühlt die Lager der Hauptkühlmittelpumpen.</p>
+
+<div class="hinweis">
+  <div class="kopf">Kette merken</div>
+  <p>Zwischenkühlkreis → Komponentenkühlung → Hauptkühlmittelpumpen. Ohne <span class="kurz">ZWK</span> lässt sich <span class="kurz">KK1</span> nicht starten, und ohne <span class="kurz">KK1</span> läuft keine Hauptkühlmittelpumpe von Block 1 an.</p>
 </div>
 
-<div class="aenderung">
-  <h2>Mipmaps und trilineare Filterung</h2>
-  <span class="ort">src/scene/placement_system.cpp – PlacementSystem::BuildLabel</span>
-  <p>Nach dem Erzeugen der Textur werden <code>GenTextureMipmaps</code> und <code>SetTextureFilter(TEXTURE_FILTER_TRILINEAR)</code> aufgerufen. Jede Beschriftung erhält dadurch acht bis neun Detailstufen; die Grafikkarte mittelt über alle Texel, die auf ein Bildschirmpixel fallen, statt eines davon herauszugreifen. Damit ist Ursache 2 behoben.</p>
+<h2 id="k2-4">Nebenanlagen und Überwachung</h2>
+
+<table>
+  <caption>Weitere gemeinsame Systeme.</caption>
+  <thead><tr><th>Gruppe</th><th>Funktion</th></tr></thead>
+  <tbody>
+    <tr><td class="kurz">LUE</td><td>Lüftung der Anlagenräume</td></tr>
+    <tr><td class="kurz">BRD</td><td>Brandschutzsystem</td></tr>
+    <tr><td class="kurz">WRT</td><td>Wartenklimatisierung</td></tr>
+    <tr><td class="kurz">AKT</td><td>Aktivitätsüberwachung. Steigt an, wenn ein Block überhitzt und sein Containment nicht abgeriegelt ist. Mit QIT zurücksetzen.</td></tr>
+    <tr><td class="kurz">LCK</td><td>Leckageüberwachung, gleiche Auslösebedingung</td></tr>
+    <tr><td class="kurz">CN1 / CN2</td><td>Containment je Block. <strong>ISO</strong> riegelt ab, <strong>AUF</strong> gibt wieder frei.</td></tr>
+    <tr><td class="kurz">HND / AUT</td><td>Betriebsart. In AUTO regeln die Speisewasserpumpen das Dampferzeugerniveau selbst.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k2-5">Fehlerbehebung</h2>
+
+<table>
+  <caption>Störungen der gemeinsamen Anlagenteile.</caption>
+  <thead><tr><th>Beobachtung</th><th>Ursache</th><th>Abhilfe</th></tr></thead>
+  <tbody>
+    <tr><td>Meldung „… OHNE STROM“, kein Antrieb startet</td><td>Keine Einspeisung oder keine Schiene</td><td>EB oder NS1/NS2 einschalten <em>und</em> SCA oder SCB zuschalten</td></tr>
+    <tr><td>Meldung „… OHNE VORSYSTEM“</td><td>Ein vorgelagertes System fehlt</td><td>Reihenfolge aus Kapitel 2.2 bzw. 2.3 einhalten</td></tr>
+    <tr><td>Ein Aggregat fällt im Betrieb von selbst ab</td><td>Sein Vorsystem oder der Strom ist weggefallen</td><td>Vorsystem wiederherstellen, dann neu starten</td></tr>
+    <tr><td>AKT und LCK blinken rot</td><td>Ein Block über 320 °C bei offenem Containment</td><td>Kühlung verbessern, Containment mit ISO abriegeln, danach quittieren</td></tr>
+  </tbody>
+</table>
+
+<h1 id="k3">Blockfreigabe und Schutz</h1>
+
+<p>Jeder Block hat auf der Mittelfläche eine eigene Freigabegruppe <span class="kurz">FR1</span> beziehungsweise <span class="kurz">FR2</span>; die Schnellabschaltung <span class="kurz">SCR</span> sitzt auf der jeweiligen Blockfläche.</p>
+
+<div class="abb">
+  <div class="platz">[ Abbildung: Gruppen FR1 und FR2 auf der Mittelfläche ]</div>
+  <div class="bu"><strong>Abbildung 2</strong> — Die beiden Schlüsselschalter mit dem jeweiligen Block-NOT-AUS daneben.</div>
 </div>
 
-<div class="aenderung">
-  <h2>Anisotrope Filterung</h2>
-  <span class="ort">src/scene/placement_system.cpp – PlacementSystem::BuildLabel</span>
-  <p>Zusätzlich wird <code>SetTextureFilter(TEXTURE_FILTER_ANISOTROPIC_16X)</code> gesetzt. Die Grafikkarte tastet damit mehrfach entlang der stark gestauchten Richtung ab, statt auf eine gröbere Mipmap-Stufe auszuweichen, und behält die Schärfe in der Gegenrichtung. Damit ist Ursache 3 behoben. Die Hardware meldet volle Unterstützung für 16-fache Anisotropie; im Log erscheint keine Warnung.</p>
+<h2 id="k3-1">Steuerung</h2>
+
+<h3 id="k3-1-1">Schlüsselschalter</h3>
+
+<p>Der Schlüsselschalter <span class="kurz">STA</span> gibt den Block frei. Ein Klick dreht ihn in die andere Stellung. Ohne Freigabe lassen sich weder Regelstäbe ausfahren noch Antriebe des Blocks starten. Beim Zurückdrehen fahren die Regelstäbe auf 0 % ein.</p>
+
+<div class="hinweis">
+  <div class="kopf">Zur Kenntnis</div>
+  <p>Der Schlüssel zeigt seine Stellung nicht am Modell an, weil beide Stellungen dasselbe 3D-Modell verwenden. Die tatsächliche Stellung liest man an der Leuchte <span class="kurz">FR1</span> beziehungsweise <span class="kurz">FR2</span> ab.</p>
 </div>
 
-<h1>Was noch offen ist</h1>
+<h3 id="k3-1-2">NOT-AUS des Blocks</h3>
 
-<p>Ursache 1 ist ausdrücklich <strong>nicht</strong> behoben. Filterung kann keine Bildpunkte erzeugen, die nicht vorhanden sind: „STOERUNG“ wird weiterhin mit 39 % der Zeilenhöhe gezeichnet und ist nur wenige Bildschirmpixel hoch – jetzt sauber statt matschig, aber nach wie vor klein. Dafür bleiben zwei Wege.</p>
+<p>Der rote Taster <span class="kurz">NOT</span> neben dem Schlüssel wirft den <em>gesamten</em> Block ab: Schnellabschaltung, alle Haupt- und Speisewasserpumpen aus, Turbine, Generator und Netzschalter ab, Frischdampf- und Umleitventil zu, Schlüssel springt auf AUS. Der andere Block läuft unbeeinflusst weiter.</p>
 
-<h2>Kurzfristig: Beschriftungen auf drei Zeichen kürzen</h2>
+<h3 id="k3-1-3">Schnellabschaltung und Rücksetzung</h3>
 
-<p>BETRIEB wird zu BTR, NOT-AUS zu NOT, STOERUNG zu STR, WARNUNG zu WRN. Das ist allein in den Platzierungs-JSONs zu erledigen, kostet keine Codeänderung und verdoppelt bis verdreifacht die Schriftgröße der schlechtesten Fälle. Abkürzungen sind auf realen Schaltwarten ohnehin die Regel; das Handbuch löst sie auf.</p>
+<p><span class="kurz">SCR</span> auf der Blockfläche löst nur die Reaktorschnellabschaltung aus — die Regelstäbe fallen auf 0 %, die übrige Blockanlage läuft weiter. Das ist der schonendere Eingriff, weil die Kühlung erhalten bleibt.</p>
 
-<h2>Strukturell: Zoom beziehungsweise Heranfahren der Kamera</h2>
+<p><span class="kurz">RST</span> setzt zurück. Das gelingt nur, wenn quittiert wurde <em>und</em> keine Auslösebedingung mehr ansteht: Primärdruck unter 170 bar, Kühlmitteltemperatur unter 320 °C, Dampferzeugerniveau über 30 %.</p>
 
-<p>Die Kamera steht derzeit fest auf drei Blickrichtungen (<code>GameConfig::ViewTargets</code>). Ein Heranfahren an die gerade betrachtete Fläche löst das Leseproblem dauerhaft und wird spätestens dann unverzichtbar, wenn das Pult statt zwei Dutzend mehrere hundert Elemente trägt. Der gleiche Mechanismus liefert außerdem die Nahaufnahmen einzelner Bediengruppen, die das geplante Handbuch als Screenshots braucht.</p>
+<h2 id="k3-2">Rückmeldungen</h2>
+
+<table>
+  <caption>Meldeleuchten der Freigabe- und Schutzgruppen.</caption>
+  <thead><tr><th>Leuchte</th><th>Ort</th><th>Bedeutung</th></tr></thead>
+  <tbody>
+    <tr><td class="kurz">FR1 / FR2</td><td>Mitte</td><td><span class="lampe l-gruen"></span>Block freigegeben, Schlüssel auf START</td></tr>
+    <tr><td class="kurz">STR</td><td>Mitte</td><td><span class="lampe l-rot"></span>Sammelstörung, blinkt bis zur Quittierung</td></tr>
+    <tr><td class="kurz">SCR</td><td>Blockfläche</td><td><span class="lampe l-rot"></span>Schnellabschaltung ausgelöst, Stäbe eingefahren</td></tr>
+    <tr><td class="kurz">BER</td><td>Blockfläche</td><td><span class="lampe l-gruen"></span>Block freigegeben und keine Schnellabschaltung anstehend</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k3-3">Fehlerbehebung</h2>
+
+<table>
+  <caption>Störungen an Freigabe und Schutz.</caption>
+  <thead><tr><th>Beobachtung</th><th>Ursache</th><th>Abhilfe</th></tr></thead>
+  <tbody>
+    <tr><td>FR bleibt nach dem Drehen dunkel</td><td>Schlüssel steht auf AUS</td><td>Erneut klicken</td></tr>
+    <tr><td>RST zeigt keine Wirkung</td><td>Nicht quittiert oder Auslösebedingung steht noch an</td><td>QIT drücken, dann Druck, Temperatur und Niveau in den zulässigen Bereich bringen</td></tr>
+    <tr><td>Block fällt selbsttätig ab</td><td>Schutzauslösung</td><td>Klartext auf dem Display MELDUNGEN lesen, siehe Kapitel 9.5.1</td></tr>
+  </tbody>
+</table>
+
+<h1 id="k4">Reaktor</h1>
+
+<p>Der Reaktor erzeugt die thermische Leistung und ist die Eingangsgröße für den gesamten Block. Die Bediengruppen liegen im obersten Band der Blockfläche.</p>
+
+<h2 id="k4-1">Stabgruppen</h2>
+
+<p>Die Regelstäbe sind in zwei Gruppen aufgeteilt. <span class="kurz">G1</span> und <span class="kurz">G2</span> geben die jeweilige Gruppe frei; beide Taster arbeiten als Umschalter. <strong>Mindestens eine Gruppe muss freigegeben sein</strong>, sonst lassen sich die Stäbe nicht ausfahren und es erscheint die Meldung „KEINE STABGRUPPE“.</p>
+
+<h2 id="k4-2">Regelstäbe</h2>
+
+<p>Die Stabstellung wird in Prozent angegeben: <strong>0 % ganz eingefahren</strong> (Reaktor abgeschaltet), <strong>100 % ganz ausgefahren</strong> (Volllast).</p>
+
+<ul>
+  <li><strong>AUS</strong> (grün) fährt die Stäbe um 5 % heraus und erhöht die Leistung. Nur mit Blockfreigabe, freigegebener Stabgruppe und ohne anstehende Schnellabschaltung.</li>
+  <li><strong>EIN</strong> (rot) fährt sie um 5 % ein. Jederzeit möglich.</li>
+</ul>
+
+<p>Die Leistung folgt der Stabstellung träge. Zusätzlich wirkt eine <strong>negative Temperaturrückkopplung</strong>: steigt die Kühlmitteltemperatur über 300 °C, sinkt die Leistung von selbst. Der Reaktor stabilisiert sich dadurch weitgehend selbst.</p>
+
+<h2 id="k4-3">Boreinspeisung</h2>
+
+<p><span class="kurz">BOR</span> speist ein Neutronengift in den Primärkreis und senkt die Reaktivität um etwa 40 Prozentpunkte Stabstellung. Sie ist die zweite, vom Stabantrieb unabhängige Abschaltmöglichkeit.</p>
+
+<h2 id="k4-4">Rückmeldungen</h2>
+
+<table>
+  <caption>Meldeleuchten des Reaktors.</caption>
+  <thead><tr><th>Leuchte</th><th>Bedeutung</th></tr></thead>
+  <tbody>
+    <tr><td class="kurz">RX</td><td><span class="lampe l-gruen"></span>Reaktor kritisch, Leistung über 1 %</td></tr>
+    <tr><td class="kurz">HI</td><td><span class="lampe l-rot"></span>Leistung über 105 % oder Kühlmitteltemperatur über 320 °C</td></tr>
+    <tr><td class="kurz">G1 / G2</td><td><span class="lampe l-gruen"></span>Stabgruppe freigegeben</td></tr>
+    <tr><td class="kurz">BOR</td><td><span class="lampe l-gruen"></span>Boreinspeisung läuft</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k4-5">Fehlerbehebung</h2>
+
+<table>
+  <caption>Störungen am Reaktor.</caption>
+  <thead><tr><th>Beobachtung</th><th>Ursache</th><th>Abhilfe</th></tr></thead>
+  <tbody>
+    <tr><td>Meldung „KEINE STABGRUPPE“</td><td>Weder G1 noch G2 freigegeben</td><td>G1 drücken, Leuchte muss grün werden</td></tr>
+    <tr><td>Stäbe fahren nicht aus</td><td>Block nicht freigegeben oder SCRAM aktiv</td><td>Kapitel 3.1.1 und 3.1.3</td></tr>
+    <tr><td>Leistung bleibt trotz ausgefahrener Stäbe niedrig</td><td>Bor im Kreislauf oder Kühlmittel zu heiß</td><td>BOR AUS; Kühlung verbessern</td></tr>
+  </tbody>
+</table>
+
+<h1 id="k5">Primärkreis</h1>
+
+<h2 id="k5-1">Hauptkühlmittelpumpen</h2>
+
+<p>Zwei Hauptkühlmittelpumpen <span class="kurz">HK1</span> und <span class="kurz">HK2</span> wälzen das Kühlmittel um. Der Start setzt <strong>drei Bedingungen</strong> voraus: Blockfreigabe, Stromversorgung und die Komponentenkühlung des eigenen Blocks.</p>
+
+<div class="warnung">
+  <div class="kopf">Wichtigste Betriebsregel</div>
+  <p>Eine einzelne Hauptkühlmittelpumpe reicht nur bis etwa halbe Leistung. Bei Volllast mit nur einer Pumpe steigt die Kühlmitteltemperatur bis zur Abschaltgrenze von 340 °C. <strong>Über 50 % Leistung müssen beide Pumpen laufen.</strong></p>
+</div>
+
+<p>Die Wärme wird außerdem nur abgeführt, wenn im Dampferzeuger Wasser steht. Fällt dessen Niveau unter 20 %, bricht die Wärmeabfuhr fast vollständig zusammen, auch bei laufenden Pumpen.</p>
+
+<h2 id="k5-2">Druckhalter</h2>
+
+<p>Der Druckhalter stellt den Primärdruck ein. Er folgt der Kühlmitteltemperatur; mit den beiden Tastern lässt er sich um jeweils rund 25 bar verschieben. Beide arbeiten als Umschalter.</p>
+
+<ul>
+  <li><span class="kurz">HZG</span> Heizung — <em>erhöht</em> den Druck.</li>
+  <li><span class="kurz">SPR</span> Sprüheinrichtung — <em>senkt</em> den Druck.</li>
+</ul>
+
+<table>
+  <caption>Druckbereiche des Primärkreises.</caption>
+  <thead><tr><th>Bereich</th><th class="zahl">Druck</th><th>Bedeutung</th></tr></thead>
+  <tbody>
+    <tr><td>Normalbetrieb</td><td class="zahl">100 – 170 bar</td><td>Statuslampe DH grün</td></tr>
+    <tr><td>Warnung</td><td class="zahl">über 170 bar</td><td>WRN leuchtet, Displayzahl wird rot</td></tr>
+    <tr><td>Schnellabschaltung</td><td class="zahl">über 185 bar</td><td>„DRUCK HOCH“</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k5-3">Sicherheits- und Hilfssysteme</h2>
+
+<table>
+  <caption>Hilfssysteme des Primärkreises. Alle brauchen Blockfreigabe und Strom.</caption>
+  <thead><tr><th>Kurz</th><th>System</th><th>Wirkung und Einsatzfall</th></tr></thead>
+  <tbody>
+    <tr><td class="kurz">NK</td><td>Notkühlung</td><td>Führt sehr große Wärmemengen ab, unabhängig vom Dampferzeuger. Bei zu heißem Kühlmittel und nach SCRAM, wenn die Hauptkühlmittelpumpen fehlen.</td></tr>
+    <tr><td class="kurz">SI1 SI2</td><td>Sicherheitseinspeisung</td><td>Zwei unabhängige Stränge, führen zusätzlich Wärme ab und ersetzen Kühlmittel.</td></tr>
+    <tr><td class="kurz">NAK</td><td>Nachkühlsystem</td><td>Für den abgeschalteten Reaktor, führt die Nachzerfallswärme ab.</td></tr>
+    <tr><td class="kurz">VOL</td><td>Volumenregelung</td><td>Hält den Füllstand des Primärkreises.</td></tr>
+    <tr><td class="kurz">DSP</td><td>Druckspeicher</td><td>Scharf geschaltet speist er selbsttätig ein, sobald der Primärdruck unter 40 bar fällt. Die Leuchte LOW zeigt diesen Zustand an.</td></tr>
+    <tr><td class="kurz">ABV</td><td>Abblaseventil</td><td>Senkt den Primärdruck um etwa 20 bar pro Sekunde. Braucht keine Freigabe.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k5-4">Rückmeldungen</h2>
+
+<p>Alle Pumpen melden über die linke Leuchte ihren Betrieb (Kennzeichen leuchtet grün) und über die rechte Leuchte <span class="kurz">STR</span> eine Störung. Die Ventile <span class="kurz">ABV</span>, <span class="kurz">FD</span> und <span class="kurz">BYP</span> melden ihre Endlage: es leuchtet immer genau eine der beiden Leuchten, links grün für AUF, rechts orange für ZU.</p>
+
+<h2 id="k5-5">Fehlerbehebung</h2>
+
+<table>
+  <caption>Störungen im Primärkreis.</caption>
+  <thead><tr><th>Beobachtung</th><th>Ursache</th><th>Abhilfe</th></tr></thead>
+  <tbody>
+    <tr><td>Meldung „OHNE KOMPKUEHLUNG“, STR blinkt</td><td>Komponentenkühlung des Blocks läuft nicht</td><td>ZWK, dann KK1 bzw. KK2 einschalten, quittieren, Pumpe neu starten</td></tr>
+    <tr><td>Meldung „… GESPERRT“</td><td>Block nicht freigegeben oder kein Strom</td><td>Kapitel 2.1 und 3.1.1</td></tr>
+    <tr><td>Temperatur steigt trotz laufender Pumpen</td><td>Nur eine Pumpe, oder Dampferzeugerniveau unter 20 %</td><td>Zweite Pumpe zuschalten, Speisewasser erhöhen</td></tr>
+    <tr><td>Druck steigt über 170 bar</td><td>Temperatur zu hoch oder Heizung ein</td><td>HZG aus, SPR ein, notfalls ABV öffnen</td></tr>
+  </tbody>
+</table>
+
+<h1 id="k6">Sekundärkreis</h1>
+
+<h2 id="k6-1">Dampferzeuger und Speisewasser</h2>
+
+<p>Das Niveau wird über die Speisewasserpumpen <span class="kurz">SP1</span> und <span class="kurz">SP2</span> geregelt, unterstützt durch das Notspeisewasser <span class="kurz">NSP</span>. Die Dampfentnahme senkt es.</p>
+
+<div class="hinweis">
+  <div class="kopf">Betriebsart AUTO</div>
+  <p>Mit <span class="kurz">AUT</span> auf der Mittelfläche regeln die Speisewasserpumpen selbsttätig: Pumpe 1 unterhalb 55 %, Pumpe 2 zusätzlich unterhalb 45 %. Das gilt für <em>beide</em> Blöcke gleichzeitig. Für das Anfahren dringend empfohlen.</p>
+</div>
+
+<table>
+  <caption>Niveaubereiche des Dampferzeugers.</caption>
+  <thead><tr><th>Bereich</th><th class="zahl">Niveau</th><th>Folge</th></tr></thead>
+  <tbody>
+    <tr><td>Schnellabschaltung</td><td class="zahl">unter 10 %</td><td>„DE-NIVEAU TIEF“</td></tr>
+    <tr><td>Wärmeabfuhr bricht ein</td><td class="zahl">unter 20 %</td><td>Primärkreis heizt sich auf</td></tr>
+    <tr><td>Warnung tief</td><td class="zahl">unter 30 %</td><td>WRN leuchtet</td></tr>
+    <tr><td>Normalbetrieb</td><td class="zahl">30 – 95 %</td><td>Statuslampe DE grün</td></tr>
+    <tr><td>Warnung hoch</td><td class="zahl">über 95 %</td><td>Wasser wird auf die Turbine mitgerissen</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k6-2">Frischdampf und Umleitstation</h2>
+
+<p>Das Frischdampfventil <span class="kurz">FD</span> gibt den Dampf auf die Turbine frei; es lässt sich nur bei freigegebenem Block öffnen. Die Umleitstation <span class="kurz">BYP</span> führt Dampf am Turbosatz vorbei in den Kondensator — zum Druckabbau beim Anfahren und nach einem Turbinenschnellschluss.</p>
+
+<h2 id="k6-3">Fehlerbehebung</h2>
+
+<table>
+  <caption>Störungen im Sekundärkreis.</caption>
+  <thead><tr><th>Beobachtung</th><th>Ursache</th><th>Abhilfe</th></tr></thead>
+  <tbody>
+    <tr><td>Niveau fällt trotz laufender Speisepumpen</td><td>Dampfentnahme übersteigt die Speisung</td><td>Zweite Pumpe zuschalten oder auf AUTO umschalten</td></tr>
+    <tr><td>Dampferzeugerdruck steigt unaufhaltsam</td><td>Kein Abnehmer: FD und BYP zu</td><td>Umleitstation öffnen oder Turbine in Betrieb nehmen</td></tr>
+    <tr><td>FD lässt sich nicht öffnen</td><td>Block nicht freigegeben</td><td>Schlüssel auf START</td></tr>
+  </tbody>
+</table>
+
+<h1 id="k7">Turbosatz und Netz</h1>
+
+<h2 id="k7-1">Turbine</h2>
+
+<p>Die Turbine <span class="kurz">TUR</span> läuft nur an, wenn alle vier Bedingungen erfüllt sind:</p>
+
+<ol class="schritte">
+  <li>Turbine freigegeben (Taster EIN),</li>
+  <li>Frischdampfventil offen,</li>
+  <li>Dampferzeugerdruck über 15 bar,</li>
+  <li>Kondensatorvakuum über 50 %.</li>
+</ol>
+
+<p>Der Drehzahlregler hält sie anschließend auf 100 % Nenndrehzahl. Hochdrehen tritt nur beim Lastabwurf auf (Kapitel 9.5.2); bei über 110 % spricht der Überdrehzahlschutz an und wirft den Turbosatz ab.</p>
+
+<h2 id="k7-2">Generator</h2>
+
+<p><span class="kurz">ERR</span> erregt den Generator, <span class="kurz">AUS</span> nimmt die Erregung weg und öffnet zugleich den Netzschalter. Ohne Erregung liefert der Generator keine Leistung, auch wenn die Turbine dreht.</p>
+
+<h2 id="k7-3">Netzschalter und Synchronisation</h2>
+
+<p>Die Netzschalter <span class="kurz">NZ1</span> und <span class="kurz">NZ2</span> liegen auf der Mittelfläche. Der Schalter lässt sich nur schließen, wenn der Generator erregt ist <em>und</em> die Drehzahl zwischen <strong>98 % und 102 %</strong> liegt — sonst erscheint „SYNC GESPERRT“.</p>
+
+<p>Die orange Leuchte <span class="kurz">SYN</span> auf der Blockfläche zeigt an, dass alle Bedingungen erfüllt sind: sie ist das Startsignal für den Tastendruck.</p>
+
+<p>Nach dem Schließen liefert der Block etwa das 3,3-fache seiner thermischen Leistung in Megawatt — bei 100 % also rund 330 MW. Der Erlös errechnet sich aus der Summe beider Blöcke.</p>
+
+<h2 id="k7-4">Fehlerbehebung</h2>
+
+<table>
+  <caption>Störungen an Turbosatz und Netz.</caption>
+  <thead><tr><th>Beobachtung</th><th>Ursache</th><th>Abhilfe</th></tr></thead>
+  <tbody>
+    <tr><td>Meldung „KEIN VAKUUM“</td><td>Vakuum unter 50 %</td><td>KW, KD und VA des Blocks einschalten, Aufbau abwarten</td></tr>
+    <tr><td>Turbine dreht nicht hoch</td><td>FD zu oder Dampferzeugerdruck unter 15 bar</td><td>Ventil öffnen, Reaktorleistung erhöhen</td></tr>
+    <tr><td>Meldung „SYNC GESPERRT“</td><td>Generator nicht erregt oder Drehzahl außerhalb 98–102 %</td><td>ERR drücken, auf die Leuchte SYN warten</td></tr>
+    <tr><td>Meldung „VOM NETZ“</td><td>Erregung weggefallen oder Drehzahl unter 95 %</td><td>Dampfversorgung prüfen, neu erregen und synchronisieren</td></tr>
+    <tr><td>UEB leuchtet, Turbosatz abgeworfen</td><td>Überdrehzahl nach Lastabwurf</td><td>Kapitel 9.5.2</td></tr>
+  </tbody>
+</table>
+
+<h1 id="k8">Anzeigen</h1>
+
+<h2 id="k8-1">Die Statusleisten</h2>
+
+<p>In der Mitte des Pults liegen <strong>zwei Reihen zu je acht grünen Leuchten</strong> — die obere für Block 1, die untere für Block 2. Sie bilden die Kette des jeweiligen Blocks ab und schalten beim Anfahren von links nach rechts durch. Leuchten alle acht, ist der Block vollständig am Netz.</p>
+
+<table>
+  <caption>Bedeutung der acht Statusleuchten je Block.</caption>
+  <thead><tr><th>Leuchte</th><th>Leuchtet, wenn</th></tr></thead>
+  <tbody>
+    <tr><td class="kurz">RX</td><td>Reaktor kritisch, Leistung über 1 %</td></tr>
+    <tr><td class="kurz">PRI</td><td>beide Hauptkühlmittelpumpen laufen</td></tr>
+    <tr><td class="kurz">DH</td><td>Primärdruck zwischen 100 und 170 bar</td></tr>
+    <tr><td class="kurz">DE</td><td>Dampferzeugerniveau über 30 %</td></tr>
+    <tr><td class="kurz">SPW</td><td>mindestens eine Speisewasserpumpe läuft</td></tr>
+    <tr><td class="kurz">TUR</td><td>Turbinendrehzahl über 95 %</td></tr>
+    <tr><td class="kurz">GEN</td><td>Generator erregt</td></tr>
+    <tr><td class="kurz">NTZ</td><td>Netzschalter geschlossen</td></tr>
+  </tbody>
+</table>
+
+<div class="hinweis">
+  <div class="kopf">Schnelldiagnose</div>
+  <p>Die erste dunkle Leuchte von links zeigt, an welcher Stelle die Kette abreißt. Das ist der schnellste Weg zur Ursache, wenn ein Block nicht ans Netz kommt.</p>
+</div>
+
+<h2 id="k8-2">Die zehn Displays</h2>
+
+<table>
+  <caption>Displays und ihr Inhalt.</caption>
+  <thead><tr><th>Display</th><th>Ort</th><th>Hauptwert</th><th>Nebenwerte</th></tr></thead>
+  <tbody>
+    <tr><td>REAKTOR 1 / 2</td><td>Blockfläche</td><td>thermische Leistung in %</td><td>Stabstellung mit Balken, Freigabe- und SCRAM-Zustand</td></tr>
+    <tr><td>PRIMAER 1 / 2</td><td>Blockfläche</td><td>Kühlmitteltemperatur in °C</td><td>Primärdruck mit Balken, Anzahl laufender Hauptkühlmittelpumpen</td></tr>
+    <tr><td>DAMPFERZ 1 / 2</td><td>Blockfläche</td><td>Dampferzeugerdruck in bar</td><td>Niveau mit Balken, Stellung des Frischdampfventils</td></tr>
+    <tr><td>BLOCK 1 / 2</td><td>Mitte</td><td>elektrische Leistung in MW</td><td>Drehzahl, Vakuum mit Balken, Netzzustand</td></tr>
+    <tr><td>NETZ</td><td>Mitte</td><td>Gesamtleistung beider Blöcke</td><td>Einzelleistungen, Erlös und Ziel mit Fortschrittsbalken</td></tr>
+    <tr><td>MELDUNGEN</td><td>Mitte</td><td>Klartext der letzten Störung</td><td>Strom, Zwischenkühlkreis, Aktivität, Leckage, Betriebsart, Quittierstand</td></tr>
+  </tbody>
+</table>
+
+<p>Alle Displays färben ihren Hauptwert <strong>rot</strong>, sobald er die Warngrenze überschreitet. Die Zahl ist damit selbst eine Meldung.</p>
+
+<h2 id="k8-3">Meldungen, Quittieren, Lampentest</h2>
+
+<ul>
+  <li><span class="lampe l-orange"></span><span class="kurz">WRN</span> — Sammelwarnung. Erlischt selbsttätig. Ausgelöst durch: Primärdruck über 170 bar, Temperatur über 320 °C, Niveau unter 30 % oder über 95 %, Turbinenbetrieb ohne Vakuum, fehlende Stromversorgung, erhöhte Aktivität oder Leckage — <em>in einem beliebigen der beiden Blöcke</em>.</li>
+  <li><span class="lampe l-rot"></span><span class="kurz">STR</span> — Sammelstörung, bleibt bis zur Quittierung stehen und blinkt.</li>
+  <li><span class="kurz">QIT</span> quittiert alle anstehenden Störungen beider Blöcke einschließlich der Einzelstörungen an Pumpen.</li>
+  <li><span class="kurz">TST</span> schaltet für zwei Sekunden sämtliche Meldeleuchten der gesamten Warte ein. Eine dabei dunkle Leuchte ist defekt.</li>
+</ul>
+
+<p>Der Klartext der letzten Störung steht auf dem Display MELDUNGEN und beginnt mit der Blocknummer, etwa „B2 DRUCK HOCH“.</p>
+
+<h1 id="k9">Betrieb</h1>
+
+<h2 id="k9-1">Anfahren eines Blocks</h2>
+
+<p>Zuerst die gemeinsamen Anlagen, dann der Block. Wer eine Stufe überspringt, bekommt eine Störmeldung statt eines Anlaufs.</p>
+
+<ol class="schritte">
+  <li><strong>Stromversorgung herstellen:</strong> <span class="kurz">EB</span> EIN, danach <span class="kurz">SCA</span> EIN. Beides ist nötig.</li>
+  <li><strong>Zwischenkühlkreis</strong> <span class="kurz">ZWK</span> EIN, dann die <strong>Komponentenkühlung</strong> des Blocks <span class="kurz">KK1</span> EIN.</li>
+  <li><strong>Kondensationsanlage:</strong> <span class="kurz">KW1</span> EIN, dann <span class="kurz">KD1</span> EIN, dann <span class="kurz">VA1</span> EIN. Das Vakuum braucht einige Sekunden.</li>
+  <li><strong>Betriebsart AUTO</strong> wählen, damit das Dampferzeugerniveau selbsttätig geregelt wird.</li>
+  <li><strong>Block freigeben:</strong> Schlüsselschalter <span class="kurz">FR1</span> auf START.</li>
+  <li><strong>Beide Hauptkühlmittelpumpen</strong> starten: <span class="kurz">HK1</span> und <span class="kurz">HK2</span> EIN. Die Statusleuchte PRI wird grün.</li>
+  <li><strong>Speisewasser:</strong> <span class="kurz">SP1</span> EIN (in AUTO geschieht das selbst).</li>
+  <li><strong>Stabgruppe freigeben:</strong> <span class="kurz">G1</span> drücken.</li>
+  <li><strong>Regelstäbe ausfahren</strong> auf etwa 40–50 %. Temperatur und Druck beobachten.</li>
+  <li><strong>Druck einstellen:</strong> mit <span class="kurz">HZG</span> anheben, mit <span class="kurz">SPR</span> senken, Zielbereich 100–170 bar.</li>
+  <li><strong>Umleitstation</strong> <span class="kurz">BYP</span> AUF, bis der Dampferzeugerdruck 15 bar überschreitet.</li>
+  <li><strong>Frischdampf</strong> <span class="kurz">FD</span> AUF und <strong>Turbine</strong> <span class="kurz">TUR</span> EIN. Die Drehzahl läuft auf 100 %.</li>
+  <li><strong>Generator erregen</strong> (<span class="kurz">ERR</span>). Sobald <span class="kurz">SYN</span> orange leuchtet: <strong>Netzschalter</strong> <span class="kurz">NZ1</span> EIN.</li>
+  <li><strong>Leistung hochfahren</strong> — ab 50 % müssen beide Hauptkühlmittelpumpen laufen.</li>
+</ol>
+
+<h2 id="k9-2">Leistungsbetrieb</h2>
+
+<table>
+  <caption>Sollwerte im Leistungsbetrieb, je Block.</caption>
+  <thead><tr><th>Größe</th><th class="zahl">Sollbereich</th><th>Stellgröße</th></tr></thead>
+  <tbody>
+    <tr><td>Kühlmitteltemperatur</td><td class="zahl">unter 320 °C</td><td>Regelstäbe, Anzahl Hauptkühlmittelpumpen</td></tr>
+    <tr><td>Primärdruck</td><td class="zahl">100 – 170 bar</td><td>Druckhalterheizung und -sprühen</td></tr>
+    <tr><td>Dampferzeugerniveau</td><td class="zahl">30 – 95 %</td><td>Speisewasserpumpen, Betriebsart AUTO</td></tr>
+    <tr><td>Turbinendrehzahl</td><td class="zahl">100 %</td><td>selbsttätig durch den Drehzahlregler</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k9-3">Den zweiten Block zuschalten</h2>
+
+<p>Der zweite Block wird genauso angefahren, mit den Systemen der eigenen Seite: <span class="kurz">KK2</span>, <span class="kurz">KW2</span>, <span class="kurz">KD2</span>, <span class="kurz">VA2</span>, Freigabe <span class="kurz">FR2</span>, Netzschalter <span class="kurz">NZ2</span>. Stromversorgung, Zwischenkühlkreis und Betriebsart sind bereits vorhanden und werden mitgenutzt.</p>
+
+<p>Beide Blöcke am Netz verdoppeln den Erlös. Sie sind bis auf die gemeinsamen Hilfsanlagen unabhängig: eine Schnellabschaltung in Block 1 lässt Block 2 unberührt.</p>
+
+<h2 id="k9-4">Abfahren</h2>
+
+<ol class="schritte">
+  <li>Regelstäbe schrittweise einfahren, bis die elektrische Leistung gegen null geht.</li>
+  <li>Netzschalter AUS, <em>danach</em> die Generatorerregung — die Reihenfolge ist wichtig, siehe Kapitel 9.5.2.</li>
+  <li>Turbine AUS, Frischdampfventil ZU.</li>
+  <li>Schlüsselschalter auf AUS. Die Regelstäbe fahren vollständig ein.</li>
+  <li><strong>Kühlung weiterlaufen lassen</strong> — die Nachzerfallswärme klingt erst über etwa anderthalb Minuten ab. Das Nachkühlsystem <span class="kurz">NAK</span> ist dafür vorgesehen.</li>
+  <li>Erst danach Hauptkühlmittelpumpen, Kondensationsanlage und zuletzt den Eigenbedarf abschalten.</li>
+</ol>
+
+<h2 id="k9-5">Störfälle</h2>
+
+<h3 id="k9-5-1">Schnellabschaltung</h3>
+
+<table>
+  <caption>Auslösebedingungen mit Klartextmeldung. Die Blocknummer steht davor.</caption>
+  <thead><tr><th>Bedingung</th><th>Klartext</th></tr></thead>
+  <tbody>
+    <tr><td>Primärdruck über 185 bar</td><td>Bx DRUCK HOCH</td></tr>
+    <tr><td>Kühlmitteltemperatur über 340 °C</td><td>Bx KUEHLMITTEL HEISS</td></tr>
+    <tr><td>Dampferzeugerniveau unter 10 %</td><td>Bx DE-NIVEAU TIEF</td></tr>
+    <tr><td>Ausfall der Stromversorgung</td><td>Bx EIGENBEDARF AUS</td></tr>
+    <tr><td>Auslösung von Hand</td><td>Bx SCRAM VON HAND</td></tr>
+    <tr><td>NOT-AUS des Blocks</td><td>Bx NOT-AUS</td></tr>
+  </tbody>
+</table>
+
+<div class="warnung">
+  <div class="kopf">Nachzerfallswärme</div>
+  <p>Nach der Abschaltung bleiben rund <strong>6 % der Leistung</strong> bestehen, die erst über etwa anderthalb Minuten abklingen. Der Reaktor ist abgeschaltet, aber nicht kalt. Die Kühlung darf deshalb <em>nicht</em> abgestellt werden — mindestens eine Hauptkühlmittelpumpe, die Notkühlung <span class="kurz">NK</span> oder das Nachkühlsystem <span class="kurz">NAK</span> muss weiterlaufen, sonst folgt die nächste Auslösung wegen zu hoher Temperatur.</p>
+</div>
+
+<p><strong>Wiederanfahren:</strong> Ursache beseitigen, mit <span class="kurz">QIT</span> quittieren, dann <span class="kurz">RST</span>. Erst wenn SCR erloschen ist, lassen sich die Regelstäbe wieder ausfahren.</p>
+
+<h3 id="k9-5-2">Lastabwurf</h3>
+
+<p>Fällt der Netzschalter, während noch Dampf auf der Turbine steht, verliert die Maschine ihre Gegenlast und dreht hoch. Bei 110 % spricht der Überdrehzahlschutz an: Frischdampfventil zu, Turbine, Generator und Netzschalter ab, Meldung „Bx UEBERDREHZAHL“.</p>
+
+<p>Vermeiden lässt sich das, indem beim Abfahren zuerst die Leistung zurückgenommen und erst dann der Netzschalter geöffnet wird. Tritt der Fall ein, ist die Umleitstation zu öffnen, damit der Dampferzeugerdruck abgebaut wird.</p>
+
+<h3 id="k9-5-3">Ausfall der Stromversorgung</h3>
+
+<p>Der schwerste Störfall, weil er <strong>beide Blöcke gleichzeitig</strong> trifft: sämtliche Pumpen fallen ab, die Wärmeabfuhr endet, beide Reaktoren gehen in Schnellabschaltung, und die Nachzerfallswärme heizt die Primärkreise ungebremst auf.</p>
+
+<ol class="schritte">
+  <li>Sofort <span class="kurz">NS1</span> EIN — der Notstromdiesel ersetzt die Normalversorgung vollwertig. Sicherstellen, dass eine Schiene zugeschaltet ist.</li>
+  <li>Mit <span class="kurz">QIT</span> quittieren.</li>
+  <li>Zwischenkühlkreis und Komponentenkühlung beider Blöcke wieder starten, dann die Hauptkühlmittelpumpen. Reicht das nicht, zusätzlich <span class="kurz">NK</span> zuschalten.</li>
+  <li>Erst wenn Temperatur und Druck wieder im zulässigen Bereich sind, mit <span class="kurz">RST</span> zurücksetzen.</li>
+</ol>
+
+<h1 id="k10">Technische Hinweise</h1>
+
+<p>Dieses Kapitel richtet sich nicht an den Bediener, sondern dokumentiert Eigenschaften der Umsetzung.</p>
+
+<h2 id="k10-1">Sperrzonen an den Pultecken</h2>
+
+<p>Die drei Pultflächen sind Parallelogramme, die sich in der <strong>Draufsicht überlappen</strong>: die Ecken der Flügel ragen über die Mittelfläche und umgekehrt. Dort liegen Gridzellen unter dem Nachbartisch, und platzierte Elemente stecken ineinander.</p>
+
+<p>Diese Zonen sind nicht von Hand eingetragen, sondern werden aus der Tischgeometrie berechnet (<code>GameConfig::CellBlocked</code>): eine Zelle ist gesperrt, wenn ihr Mittelpunkt in der Draufsicht auch auf einer anderen Fläche liegt. Ändert sich die Geometrie, wandert die Sperrzone automatisch mit. Das Platzierungssystem weist Elemente dort beim Laden mit einer Warnung ab, und im Spiel sind die betroffenen Zellen rot durchkreuzt.</p>
+
+<table>
+  <caption>Gesperrte Spalten je Zeile. Die Zone ist kein gleichmäßiges Dreieck — sie ist in Zeile 2 und 4 am breitesten und läuft nach vorne aus.</caption>
+  <thead><tr><th class="zahl">Zeile</th><th>Mitte (40 Spalten)</th><th>Rechts (25)</th><th>Links (25)</th></tr></thead>
+  <tbody>
+    <tr><td class="zahl">0</td><td>0–4, 35–39</td><td>0–4</td><td>21–24</td></tr>
+    <tr><td class="zahl">2</td><td>0–6, 33–39</td><td>0–5</td><td>19–24</td></tr>
+    <tr><td class="zahl">4</td><td>0–5, 34–39</td><td>0–5</td><td>19–24</td></tr>
+    <tr><td class="zahl">6</td><td>0–3, 36–39</td><td>0–3</td><td>21–24</td></tr>
+    <tr><td class="zahl">8</td><td>0–1, 37–39</td><td>0–2</td><td>22–24</td></tr>
+    <tr><td class="zahl">10</td><td>0, 39</td><td>0</td><td>24</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k10-2">Lesbarkeit der Beschriftungen</h2>
+
+<p><code>PlacementSystem::BuildLabel</code> skaliert das Textfeld nach der Regel „passt in die Breite <em>und</em> in die Höhe“. Eine Gridspalte ist doppelt so breit wie die Label-Zeile hoch, also 2:1. Jeder Text mit größerem Seitenverhältnis wird über die Breite begrenzt, und die Zeilenhöhe bleibt ungenutzt.</p>
+
+<table>
+  <caption>Gemessen an den Texturgrößen beim Laden, einspaltige Elemente.</caption>
+  <thead><tr><th>Zeichen</th><th class="zahl">3</th><th class="zahl">4</th><th class="zahl">5</th><th class="zahl">6</th><th class="zahl">7</th><th class="zahl">8</th></tr></thead>
+  <tbody>
+    <tr><td>genutzte Zeilenhöhe</td><td class="zahl">100 %</td><td class="zahl">86 %</td><td class="zahl">62 %</td><td class="zahl">55 %</td><td class="zahl">47 %</td><td class="zahl">39 %</td></tr>
+  </tbody>
+</table>
+
+<p>Daraus folgt die Drei-Zeichen-Regel für alle Beschriftungen. Die Label-Zeile höher zu machen bringt nichts, weil nicht die Höhe begrenzt, sondern die Spaltenbreite.</p>
+
+<p>Umgesetzt sind außerdem: Renderauflösung der Beschriftungstexturen von 40 auf 96 Pixel erhöht, Mipmaps mit trilinearer und 16-fach anisotroper Filterung (ohne sie fallen dünne Striche beim Verkleinern zufällig weg beziehungsweise verschmieren seitlich), sowie ein Textur-Cache: gleich beschriftete Elemente teilen sich eine Textur, wodurch aus 310 Beschriftungen nur 46 Renderdurchgänge werden.</p>
+
+<p>Die Displays werden dreifach überabgetastet gerendert (<code>GameConfig::ScreenSupersample</code>) und bilinear gefiltert. Ihre Textur wird per <code>inset</code> in die sichtbare Gehäuseöffnung gestaucht, weil die Bildschirmfläche im Modell unter den Rahmen reicht.</p>
+
+<h2 id="k10-3">Platzhalter-Physik</h2>
+
+<div class="warnung">
+  <div class="kopf">Wichtig für die Weiterentwicklung</div>
+  <p>Sämtliche Zahlenwerte in diesem Handbuch beschreiben eine <strong>Platzhalter-Simulation</strong> in <code>assets/scripts/logic.lua</code>, keine echte Thermohydraulik. Die Bilanzen sind allein danach gewählt, dass die Kopplungen zwischen den Anlagenteilen spürbar und die Anlage spielbar ist.</p>
+</div>
+
+<p>Die Blocklogik steht im Skript nur <strong>einmal</strong>: alle Bedienelemente heißen <code>b1_…</code> beziehungsweise <code>b2_…</code>, deshalb genügt eine Schleife über die Blocknummer mit Zugriff über <code>_G</code>. Eine dritte Blockfläche wäre entsprechend wenig Arbeit.</p>
+
+<p>Die Aufteilung ist so angelegt, dass die echte Rechnung später ohne Änderung am Pult eingesetzt werden kann: Das Skript hält die Bedienlogik, die Zustandsgrößen wandern nach <code>src/simulation/</code> in C++-Klassen. Der Grund für diese Trennung: beim Speichern einer Skriptdatei wird der gesamte Lua-Zustand verworfen und neu aufgebaut. Zustandsgrößen in Lua springen dabei jedes Mal auf ihre Startwerte zurück — bei einem Reaktor, der sich über Minuten aufheizt, macht das jedes Feinabstimmen unmöglich. In C++ überleben sie den Reload, während die Konstanten im Skript im laufenden Betrieb änderbar bleiben.</p>
+
+<h1 id="anhang">Anhang: Verzeichnis aller Bediengruppen</h1>
+<p>Dieses Verzeichnis listet jede der 71 Bediengruppen mit ihrer Lage am Pult und der Belegung ihrer vier Elemente. Es wird unmittelbar aus den Platzierungsdateien erzeugt und kann deshalb nicht vom tats&auml;chlichen Pult abweichen.</p>
+<p>Die Spalte <em>Lage</em> nennt Band und Spalten: Band A liegt am hinteren Pultrand, Band C am vorderen. Die Spaltennummer entspricht dem Gridraster der jeweiligen Fl&auml;che.</p>
+<h2>Links (Block 1)</h2>
+<table>
+<caption>Bediengruppen der Fl&auml;che Links (Block 1), nach Band und Spalte geordnet.</caption>
+<thead><tr><th>Kurz</th><th>System</th><th>Lage</th><th>Meldeleuchten</th><th>Taster</th></tr></thead><tbody>
+<tr><td class="kurz">RX</td><td>Reaktor, Regelst&auml;be</td><td>Band A, Sp. 0&ndash;1</td><td class="kurz">RX / HI</td><td class="kurz">AUS / EIN</td></tr>
+<tr><td class="kurz">SCR</td><td>Schnellabschaltung</td><td>Band A, Sp. 2&ndash;3</td><td class="kurz">SCR / BER</td><td class="kurz">SCR / RST</td></tr>
+<tr><td class="kurz">BOR</td><td>Boreinspeisung</td><td>Band A, Sp. 4&ndash;5</td><td class="kurz">BOR / HI</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">G1</td><td>Stabgruppen 1 und 2</td><td>Band A, Sp. 6&ndash;7</td><td class="kurz">G1 / G2</td><td class="kurz">G1 / G2</td></tr>
+<tr><td class="kurz">HK1</td><td>Hauptk&uuml;hlmittelpumpe 1</td><td>Band A, Sp. 12&ndash;13</td><td class="kurz">HK1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">HK2</td><td>Hauptk&uuml;hlmittelpumpe 2</td><td>Band A, Sp. 14&ndash;15</td><td class="kurz">HK2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">DSP</td><td>Druckspeicher</td><td>Band A, Sp. 16&ndash;17</td><td class="kurz">DSP / LOW</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">HZG</td><td>Druckhalter: Heizung und Spr&uuml;hen</td><td>Band B, Sp. 0&ndash;1</td><td class="kurz">HZG / SPR</td><td class="kurz">HZG / SPR</td></tr>
+<tr><td class="kurz">ABV</td><td>Prim&auml;res Abblaseventil</td><td>Band B, Sp. 2&ndash;3</td><td class="kurz">ABV / ZU</td><td class="kurz">AUF / ZU</td></tr>
+<tr><td class="kurz">VOL</td><td>Volumenregelung</td><td>Band B, Sp. 4&ndash;5</td><td class="kurz">VOL / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NK</td><td>Notk&uuml;hlung</td><td>Band B, Sp. 10&ndash;11</td><td class="kurz">NK / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SI1</td><td>Sicherheitseinspeisung Strang 1</td><td>Band B, Sp. 12&ndash;13</td><td class="kurz">SI1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SI2</td><td>Sicherheitseinspeisung Strang 2</td><td>Band B, Sp. 14&ndash;15</td><td class="kurz">SI2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NAK</td><td>Nachk&uuml;hlsystem</td><td>Band B, Sp. 16&ndash;17</td><td class="kurz">NAK / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SP1</td><td>Speisewasserpumpe 1</td><td>Band C, Sp. 0&ndash;1</td><td class="kurz">SP1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SP2</td><td>Speisewasserpumpe 2</td><td>Band C, Sp. 2&ndash;3</td><td class="kurz">SP2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NSP</td><td>Notspeisewasser</td><td>Band C, Sp. 4&ndash;5</td><td class="kurz">NSP / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">FD</td><td>Frischdampfventil</td><td>Band C, Sp. 10&ndash;11</td><td class="kurz">FD / ZU</td><td class="kurz">AUF / ZU</td></tr>
+<tr><td class="kurz">BYP</td><td>Umleitstation</td><td>Band C, Sp. 12&ndash;13</td><td class="kurz">BYP / ZU</td><td class="kurz">AUF / ZU</td></tr>
+<tr><td class="kurz">TUR</td><td>Turbine</td><td>Band C, Sp. 14&ndash;15</td><td class="kurz">TUR / UEB</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">GEN</td><td>Generator</td><td>Band C, Sp. 16&ndash;17</td><td class="kurz">GEN / SYN</td><td class="kurz">ERR / AUS</td></tr>
+</tbody></table>
+<table>
+<caption>Anzeigen der Fl&auml;che Links (Block 1).</caption>
+<thead><tr><th>Beschriftung</th><th>Lage</th></tr></thead><tbody>
+<tr><td class="kurz">REAKTOR 1</td><td>Band A, Sp. 8&ndash;11</td></tr>
+<tr><td class="kurz">PRIMAER 1</td><td>Band B, Sp. 6&ndash;9</td></tr>
+<tr><td class="kurz">DAMPFERZ 1</td><td>Band C, Sp. 6&ndash;9</td></tr>
+</tbody></table>
+<h2>Mitte (gemeinsam)</h2>
+<table>
+<caption>Bediengruppen der Fl&auml;che Mitte (gemeinsam), nach Band und Spalte geordnet.</caption>
+<thead><tr><th>Kurz</th><th>System</th><th>Lage</th><th>Meldeleuchten</th><th>Taster</th></tr></thead><tbody>
+<tr><td class="kurz">NZ1</td><td>Netzschalter Block 1</td><td>Band A, Sp. 23&ndash;24</td><td class="kurz">NZ1 / AUS</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NZ2</td><td>Netzschalter Block 2</td><td>Band A, Sp. 25&ndash;26</td><td class="kurz">NZ2 / AUS</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">KUP</td><td>Schaltanlagenkupplung</td><td>Band A, Sp. 27&ndash;28</td><td class="kurz">KUP / AUS</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">FR1</td><td>Blockfreigabe Block 1</td><td>Band A, Sp. 29&ndash;30</td><td class="kurz">FR1 / STR</td><td class="kurz">STA / NOT</td></tr>
+<tr><td class="kurz">FR2</td><td>Blockfreigabe Block 2</td><td>Band A, Sp. 31&ndash;32</td><td class="kurz">FR2 / STR</td><td class="kurz">STA / NOT</td></tr>
+<tr><td class="kurz">EB</td><td>Eigenbedarf</td><td>Band B, Sp. 15&ndash;16</td><td class="kurz">EB / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NS1</td><td>Notstromdiesel 1</td><td>Band B, Sp. 17&ndash;18</td><td class="kurz">NS1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NS2</td><td>Notstromdiesel 2</td><td>Band B, Sp. 19&ndash;20</td><td class="kurz">NS2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">BAT</td><td>Batterieversorgung</td><td>Band B, Sp. 21&ndash;22</td><td class="kurz">BAT / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SCA</td><td>Schiene A</td><td>Band B, Sp. 23&ndash;24</td><td class="kurz">SCA / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SCB</td><td>Schiene B</td><td>Band B, Sp. 25&ndash;26</td><td class="kurz">SCB / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">ZWK</td><td>Zwischenk&uuml;hlkreis</td><td>Band B, Sp. 27&ndash;28</td><td class="kurz">ZWK / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">LUE</td><td>L&uuml;ftung</td><td>Band B, Sp. 29&ndash;30</td><td class="kurz">LUE / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">WRN</td><td>Sammelmeldungen</td><td>Band C, Sp. 2&ndash;3</td><td class="kurz">WRN / STR</td><td class="kurz">QIT / TST</td></tr>
+<tr><td class="kurz">HND</td><td>Betriebsart Hand / Automatik</td><td>Band C, Sp. 4&ndash;5</td><td class="kurz">HND / AUT</td><td class="kurz">HND / AUT</td></tr>
+<tr><td class="kurz">KW1</td><td>Hauptk&uuml;hlwasser Block 1</td><td>Band C, Sp. 6&ndash;7</td><td class="kurz">KW1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">KW2</td><td>Hauptk&uuml;hlwasser Block 2</td><td>Band C, Sp. 8&ndash;9</td><td class="kurz">KW2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">KD1</td><td>Kondensator Block 1</td><td>Band C, Sp. 10&ndash;11</td><td class="kurz">KD1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">KD2</td><td>Kondensator Block 2</td><td>Band C, Sp. 12&ndash;13</td><td class="kurz">KD2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">VA1</td><td>Vakuumpumpe Block 1</td><td>Band C, Sp. 14&ndash;15</td><td class="kurz">VA1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">VA2</td><td>Vakuumpumpe Block 2</td><td>Band C, Sp. 16&ndash;17</td><td class="kurz">VA2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">KK1</td><td>Komponentenk&uuml;hlung Block 1</td><td>Band C, Sp. 18&ndash;19</td><td class="kurz">KK1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">KK2</td><td>Komponentenk&uuml;hlung Block 2</td><td>Band C, Sp. 20&ndash;21</td><td class="kurz">KK2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">AKT</td><td>Aktivit&auml;ts&uuml;berwachung</td><td>Band C, Sp. 22&ndash;23</td><td class="kurz">AKT / HI</td><td class="kurz">QIT / TST</td></tr>
+<tr><td class="kurz">CN1</td><td>Containment Block 1</td><td>Band C, Sp. 24&ndash;25</td><td class="kurz">CN1 / HI</td><td class="kurz">ISO / AUF</td></tr>
+<tr><td class="kurz">CN2</td><td>Containment Block 2</td><td>Band C, Sp. 26&ndash;27</td><td class="kurz">CN2 / HI</td><td class="kurz">ISO / AUF</td></tr>
+<tr><td class="kurz">LCK</td><td>Leckage&uuml;berwachung</td><td>Band C, Sp. 28&ndash;29</td><td class="kurz">LCK / HI</td><td class="kurz">QIT / TST</td></tr>
+<tr><td class="kurz">BRD</td><td>Brandschutz</td><td>Band C, Sp. 30&ndash;31</td><td class="kurz">BRD / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">WRT</td><td>Wartenklimatisierung</td><td>Band C, Sp. 32&ndash;33</td><td class="kurz">WRT / STR</td><td class="kurz">EIN / AUS</td></tr>
+</tbody></table>
+<table>
+<caption>Anzeigen der Fl&auml;che Mitte (gemeinsam).</caption>
+<thead><tr><th>Beschriftung</th><th>Lage</th></tr></thead><tbody>
+<tr><td class="kurz">BLOCK 1</td><td>Band A, Sp. 7&ndash;10</td></tr>
+<tr><td class="kurz">BLOCK 2</td><td>Band A, Sp. 11&ndash;14</td></tr>
+<tr><td class="kurz">NETZ</td><td>Band A, Sp. 15&ndash;18</td></tr>
+<tr><td class="kurz">MELDUNGEN</td><td>Band A, Sp. 19&ndash;22</td></tr>
+</tbody></table>
+<h2>Rechts (Block 2)</h2>
+<table>
+<caption>Bediengruppen der Fl&auml;che Rechts (Block 2), nach Band und Spalte geordnet.</caption>
+<thead><tr><th>Kurz</th><th>System</th><th>Lage</th><th>Meldeleuchten</th><th>Taster</th></tr></thead><tbody>
+<tr><td class="kurz">RX</td><td>Reaktor, Regelst&auml;be</td><td>Band A, Sp. 6&ndash;7</td><td class="kurz">RX / HI</td><td class="kurz">AUS / EIN</td></tr>
+<tr><td class="kurz">SCR</td><td>Schnellabschaltung</td><td>Band A, Sp. 8&ndash;9</td><td class="kurz">SCR / BER</td><td class="kurz">SCR / RST</td></tr>
+<tr><td class="kurz">BOR</td><td>Boreinspeisung</td><td>Band A, Sp. 10&ndash;11</td><td class="kurz">BOR / HI</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">G1</td><td>Stabgruppen 1 und 2</td><td>Band A, Sp. 12&ndash;13</td><td class="kurz">G1 / G2</td><td class="kurz">G1 / G2</td></tr>
+<tr><td class="kurz">HK1</td><td>Hauptk&uuml;hlmittelpumpe 1</td><td>Band A, Sp. 18&ndash;19</td><td class="kurz">HK1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">HK2</td><td>Hauptk&uuml;hlmittelpumpe 2</td><td>Band A, Sp. 20&ndash;21</td><td class="kurz">HK2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">DSP</td><td>Druckspeicher</td><td>Band A, Sp. 22&ndash;23</td><td class="kurz">DSP / LOW</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">HZG</td><td>Druckhalter: Heizung und Spr&uuml;hen</td><td>Band B, Sp. 6&ndash;7</td><td class="kurz">HZG / SPR</td><td class="kurz">HZG / SPR</td></tr>
+<tr><td class="kurz">ABV</td><td>Prim&auml;res Abblaseventil</td><td>Band B, Sp. 8&ndash;9</td><td class="kurz">ABV / ZU</td><td class="kurz">AUF / ZU</td></tr>
+<tr><td class="kurz">VOL</td><td>Volumenregelung</td><td>Band B, Sp. 10&ndash;11</td><td class="kurz">VOL / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NK</td><td>Notk&uuml;hlung</td><td>Band B, Sp. 16&ndash;17</td><td class="kurz">NK / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SI1</td><td>Sicherheitseinspeisung Strang 1</td><td>Band B, Sp. 18&ndash;19</td><td class="kurz">SI1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SI2</td><td>Sicherheitseinspeisung Strang 2</td><td>Band B, Sp. 20&ndash;21</td><td class="kurz">SI2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NAK</td><td>Nachk&uuml;hlsystem</td><td>Band B, Sp. 22&ndash;23</td><td class="kurz">NAK / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SP1</td><td>Speisewasserpumpe 1</td><td>Band C, Sp. 6&ndash;7</td><td class="kurz">SP1 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">SP2</td><td>Speisewasserpumpe 2</td><td>Band C, Sp. 8&ndash;9</td><td class="kurz">SP2 / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">NSP</td><td>Notspeisewasser</td><td>Band C, Sp. 10&ndash;11</td><td class="kurz">NSP / STR</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">FD</td><td>Frischdampfventil</td><td>Band C, Sp. 16&ndash;17</td><td class="kurz">FD / ZU</td><td class="kurz">AUF / ZU</td></tr>
+<tr><td class="kurz">BYP</td><td>Umleitstation</td><td>Band C, Sp. 18&ndash;19</td><td class="kurz">BYP / ZU</td><td class="kurz">AUF / ZU</td></tr>
+<tr><td class="kurz">TUR</td><td>Turbine</td><td>Band C, Sp. 20&ndash;21</td><td class="kurz">TUR / UEB</td><td class="kurz">EIN / AUS</td></tr>
+<tr><td class="kurz">GEN</td><td>Generator</td><td>Band C, Sp. 22&ndash;23</td><td class="kurz">GEN / SYN</td><td class="kurz">ERR / AUS</td></tr>
+</tbody></table>
+<table>
+<caption>Anzeigen der Fl&auml;che Rechts (Block 2).</caption>
+<thead><tr><th>Beschriftung</th><th>Lage</th></tr></thead><tbody>
+<tr><td class="kurz">REAKTOR 2</td><td>Band A, Sp. 14&ndash;17</td></tr>
+<tr><td class="kurz">PRIMAER 2</td><td>Band B, Sp. 12&ndash;15</td></tr>
+<tr><td class="kurz">DAMPFERZ 2</td><td>Band C, Sp. 12&ndash;15</td></tr>
+</tbody></table>
 
 </body>
 </html>
