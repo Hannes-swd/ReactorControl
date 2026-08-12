@@ -57,6 +57,11 @@ for i = 1, 2 do
         stoer_hkp2 = false,
         stoer_spw1 = false,
         stoer_spw2 = false,
+
+        -- --- Wirtschaft je Block ---
+        abbrand   = 0.0,     -- Brennstoffabbrand in %, waechst mit der erzeugten Leistung
+        revision  = false,   -- Block steht in Revision (Nachladen laeuft)
+        ueberlast = 0.0,     -- Sekunden, die der Block ueber 100 % gefahren wurde
     }
 end
 
@@ -97,6 +102,34 @@ stoer_text = ""     -- Klartext der letzten Stoerung
 akt_hoch  = false   -- Aktivitaet ueber Grenzwert
 leck_hoch = false   -- Leckage ueber Grenzwert
 cnt_iso = { false, false }  -- Containment abgeriegelt, je Block
+
+-- --- Wirtschaft ---------------------------------------------------------------------------------
+-- Der Anlagenbetrieb ist ein Geschaeft, kein Ablaufplan: Strom bringt Geld, jedes laufende
+-- Aggregat kostet Geld, und wie viel beides ist, haengt vom Zeitpunkt ab. Daraus entstehen die
+-- Entscheidungen - das Handbuch schreibt keine davon vor (siehe docs/documentation.html,
+-- Kapitel "Markt und Wirtschaft").
+
+markt = {
+    zeit  = 0.0,    -- Anlagenzeit in Sekunden, laeuft ab Spielstart
+    tag   = 300.0,  -- Laenge eines vollen Preiszyklus ("Tag") in Sekunden
+    preis = 1.0,    -- aktueller Preisfaktor, schwankt um 1.0
+    basis = 0.22,   -- Erloes je MW und Sekunde bei Preisfaktor 1.0
+    kosten = 0.0,   -- laufende Kosten der letzten Sekunde, nur zur Anzeige
+}
+
+-- Fahrplanangebot des Netzes: ein Lastband ueber eine feste Zeit. Wer es haelt, bekommt die
+-- Praemie; wer es verlaesst, zahlt die Strafe. Annehmen muss man es nicht - das Angebot laeuft
+-- einfach ab, wenn man weiter zum Spotpreis fahren will.
+fahrplan = {
+    aktiv   = false,
+    min     = 0.0,   -- untere Bandgrenze in MW
+    max     = 0.0,   -- obere Bandgrenze in MW
+    rest    = 0.0,   -- verbleibende Sekunden
+    praemie = 0.0,
+    strafe  = 0.0,
+    naechst = 45.0,  -- Sekunden bis zum naechsten Angebot
+    gehalten = true, -- solange true, wurde das Band nie verlassen
+}
 
 -- geld und ziel zeigt das Spiel selbst oben rechts im Fenster an (siehe src/ui/hud.h).
 geld = 0

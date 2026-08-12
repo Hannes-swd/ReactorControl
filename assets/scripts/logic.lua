@@ -13,6 +13,8 @@ local P_DRUCK_WARN, P_DRUCK_SCRAM = 170.0, 185.0
 local P_TEMP_WARN,  P_TEMP_SCRAM  = 320.0, 340.0
 local NIVEAU_WARN,  NIVEAU_SCRAM  =  30.0,  10.0
 local DREH_TRIP                   = 110.0
+local ABBRAND_RATE                = 0.0016   -- % Abbrand je Sekunde bei 100 % Leistung
+local REVISION_RATE               = 6.0      -- % Abbrand, die eine Sekunde Revision zurueckholt
 local SYNC_MIN, SYNC_MAX          =  98.0, 102.0
 
 
@@ -47,12 +49,19 @@ local function strom()
     return (agg.eb or agg.ns1 or agg.ns2) and (agg.schA or agg.schB)
 end
 
+-- Ereigniskosten. Sie sind der Grund, warum eine Schnellabschaltung mehr ist als eine rote
+-- Lampe: der Block steht danach, und der Wiederanlauf kostet. Wer knapp an den Grenzwerten
+-- fahrt, wettet gegen genau diesen Betrag.
+local KOSTEN_SCRAM = 2500.0
+local KOSTEN_BOR   =  600.0
+
 local function scram(b, grund)
     local s = bl[b]
     if not s.scram then
         s.scram = true
         s.scram_zeit = time()
         s.stab = 0.0
+        geld = geld - KOSTEN_SCRAM
         melde("B" .. b .. " " .. grund)
     end
 end
@@ -166,7 +175,11 @@ for b = 1, 2 do
         end
     end
 
-    el(p .. "bor_b1").onclick = function() s.bor = true end
+    el(p .. "bor_b1").onclick = function()
+        -- Bor abzureinigen ist teuer, deshalb nur einmal berechnen, nicht bei jedem Klick.
+        if not s.bor then geld = geld - KOSTEN_BOR end
+        s.bor = true
+    end
     el(p .. "bor_b2").onclick = function() s.bor = false end
     el(p .. "dsp_b1").onclick = function() s.dsp = true end
     el(p .. "dsp_b2").onclick = function() s.dsp = false end
@@ -255,10 +268,22 @@ local function block_tick(b, dt)
         local ziel_l = 0.0
         if s.frei then
             ziel_l = s.stab - (s.p_temp - 300.0) * 0.25 - (s.bor and 40.0 or 0.0)
+            -- Abgebrannter Brennstoff gibt weniger her: die erreichbare Leistung sinkt mit dem
+            -- Abbrand. Das ist die Uhr, die zur Revision zwingt - frueher oder spaeter.
+            ziel_l = math.min(ziel_l, 100.0 - s.abbrand)
         end
         s.leistung = s.leistung + (ziel_l - s.leistung) * dt * 0.5
     end
     s.leistung = math.max(s.leistung, 0.0)
+
+    -- Abbrand und Revision. Nachgeladen wird nur im abgestellten, freigegebenen Zustand: Schluessel
+    -- auf AUS, Staebe unten, Leistung abgeklungen. Wann man diesen Stillstand einlegt, entscheidet
+    -- der Bediener - er kostet Erloes, aber ohne ihn faellt die Leistung immer weiter.
+    s.abbrand = math.min(s.abbrand + s.leistung * dt * ABBRAND_RATE, 100.0)
+    s.revision = (not s.frei) and s.stab <= 0.0 and s.leistung < 1.0 and s.abbrand > 0.0
+    if s.revision then
+        s.abbrand = math.max(s.abbrand - REVISION_RATE * dt, 0.0)
+    end
 
     -- Primaerkreis
     local pp = (s.hkp1 and 1 or 0) + (s.hkp2 and 1 or 0)
@@ -311,6 +336,25 @@ local function block_tick(b, dt)
         melde("B" .. b .. " VOM NETZ")
     end
     s.leistung_el = (s.netz and s.gen) and s.leistung * 3.3 or 0.0
+
+    -- Verschleiss durch Ueberlast. Ueber 100 % zahlt das Netz einen Spitzenzuschlag (siehe
+    -- wirtschaft_tick), aber die Antriebe halten das nicht beliebig lange aus. Je weiter drueber
+    -- und je heisser der Primaerkreis, desto wahrscheinlicher faellt eine Pumpe aus.
+    if s.leistung > 100.0 then s.ueberlast = s.ueberlast + dt end
+    local risiko = math.max(s.leistung - 100.0, 0.0) * 0.004
+                   + (s.p_temp > P_TEMP_WARN and 0.03 or 0.0)
+    if risiko > 0.0 and math.random() < risiko * dt then
+        local laufend = {}
+        for _, a in ipairs({ "hkp1", "hkp2", "spw1", "spw2" }) do
+            if s[a] then laufend[#laufend + 1] = a end
+        end
+        if #laufend > 0 then
+            local a = laufend[math.random(#laufend)]
+            s[a] = false
+            s["stoer_" .. a] = true
+            melde("B" .. b .. " " .. string.upper(a) .. " AUSGEFALLEN")
+        end
+    end
 
     -- Schutzausloesungen
     if s.p_druck > P_DRUCK_SCRAM then scram(b, "DRUCK HOCH") end
@@ -382,6 +426,116 @@ local function block_lampen(b)
 end
 
 
+
+-- --- Wirtschaft --------------------------------------------------------------------------------
+--
+-- Hier entstehen die Entscheidungen des Spiels. Es gibt keinen richtigen Fahrweg, sondern nur
+-- teurere und billigere: Strom bringt zum jeweiligen Marktpreis Geld, jedes laufende Aggregat
+-- kostet welches, und beides laeuft gleichzeitig. Das Handbuch beschreibt die Moeglichkeiten,
+-- nicht die Reihenfolge.
+
+-- Betriebskosten je Sekunde. Sicherheit ist bewusst nicht gratis: die zweite Pumpe, der Diesel
+-- und die Notkuehlung kosten laufend. Wer alles mitlaufen laesst, faehrt sicher und arm.
+-- Nicht aufgefuehrt sind Lueftung, Brandschutz, Wartenklima und Batterie: sie kosten nichts.
+-- Sonst waere ihr Abschalten eine Ersparnis ohne jeden Nachteil - also keine Entscheidung,
+-- sondern nur ein Handgriff, den man jedes Mal machen muesste.
+local KOSTEN_AGG = {
+    eb = 2.0, ns1 = 16.0, ns2 = 16.0, schA = 0.5, schB = 0.5,
+    zwk = 2.0, kw1 = 2.0, kw2 = 2.0, kd1 = 2.0, kd2 = 2.0,
+    vak1 = 1.5, vak2 = 1.5, kkw1 = 1.5, kkw2 = 1.5,
+}
+local KOSTEN_BLOCK = {
+    hkp1 = 3.0, hkp2 = 3.0, spw1 = 2.0, spw2 = 2.0, nspw = 2.5,
+    vol = 1.0, nk = 9.0, si1 = 6.0, si2 = 6.0, nak = 4.0,
+    dh_hzg = 1.5, dh_spr = 0.5,
+}
+local KOSTEN_BOR_LAUFEND  = 25.0   -- solange eingespeist wird
+local KOSTEN_BLACKOUT     = 40.0   -- freigegebener Block ohne Stromversorgung
+local KOSTEN_REVISION     = 55.0   -- Nachladen, solange die Revision laeuft
+local VERLUST_UMLEIT      = 0.12   -- Dampf ueber die Umleitstation je bar: erzeugt, nicht verkauft
+local UEBERLAST_ZUSCHLAG  = 1.45   -- Spitzenzuschlag auf den Erloes bei Leistung ueber 100 %
+
+-- Preiskurve. Ein "Tag" dauert markt.tag Sekunden; darueber liegt eine kuerzere Welle, damit die
+-- Spitzen nicht immer an derselben Stelle stehen und man den Zeitpunkt wirklich abpassen muss.
+local function preis_kurve(t)
+    local tag  = math.sin(2.0 * math.pi * t / markt.tag)
+    local welle = math.sin(2.0 * math.pi * t / (markt.tag * 0.29))
+    return math.max(0.25, 1.0 + 0.65 * tag + 0.22 * welle)
+end
+
+local function laufende_kosten()
+    local k = 0.0
+    for name, preis in pairs(KOSTEN_AGG) do
+        if agg[name] then k = k + preis end
+    end
+    for b = 1, 2 do
+        local s = bl[b]
+        for name, preis in pairs(KOSTEN_BLOCK) do
+            if s[name] then k = k + preis end
+        end
+        if s.bor then k = k + KOSTEN_BOR_LAUFEND end
+        if s.revision then k = k + KOSTEN_REVISION end
+        if s.frei and not strom() then k = k + KOSTEN_BLACKOUT end
+        if s.by then k = k + VERLUST_UMLEIT * s.d_druck end
+    end
+    return k
+end
+
+-- Neues Fahrplanangebot. Das Band liegt immer so, dass ein Block allein es knapp halten kann und
+-- zwei Bloecke es bequem halten - beide Wege sind gueltig, sie kosten nur Unterschiedliches.
+local function neuer_fahrplan()
+    local unten = 120.0 + math.random() * 330.0
+    local dauer = 60.0 + math.random() * 60.0
+    fahrplan.aktiv   = true
+    fahrplan.min     = unten
+    fahrplan.max     = unten + 110.0
+    fahrplan.rest    = dauer
+    fahrplan.praemie = dauer * 14.0 * markt.preis
+    fahrplan.strafe  = fahrplan.praemie * 0.75
+    fahrplan.angenommen = false
+end
+
+function wirtschaft_tick(dt)
+    markt.zeit  = markt.zeit + dt
+    markt.preis = preis_kurve(markt.zeit)
+
+    -- Erloes. Der Spitzenzuschlag gilt nur fuer den Block, der tatsaechlich ueber 100 % faehrt -
+    -- er ist die Bezahlung fuer das Ausfallrisiko in block_tick.
+    local netz_mw = 0.0
+    for b = 1, 2 do
+        local s = bl[b]
+        netz_mw = netz_mw + s.leistung_el
+        local faktor = s.leistung > 100.0 and UEBERLAST_ZUSCHLAG or 1.0
+        geld = geld + s.leistung_el * markt.basis * markt.preis * faktor * dt
+    end
+
+    markt.kosten = laufende_kosten()
+    geld = geld - markt.kosten * dt
+
+    -- Fahrplan. Angenommen wird er nicht per Taster, sondern indem man liefert: wer einmal im
+    -- Band war, steht im Wort und zahlt, wenn er es wieder verlaesst. Wer das Angebot ignoriert,
+    -- faehrt einfach weiter zum Marktpreis.
+    if fahrplan.aktiv then
+        fahrplan.rest = fahrplan.rest - dt
+        local drin = netz_mw >= fahrplan.min and netz_mw <= fahrplan.max
+        if drin then fahrplan.angenommen = true end
+        if fahrplan.angenommen and not drin then
+            geld = geld - fahrplan.strafe
+            fahrplan.aktiv = false
+            fahrplan.naechst = 40.0 + math.random() * 40.0
+            melde("FAHRPLAN VERLETZT")
+        elseif fahrplan.rest <= 0.0 then
+            if fahrplan.angenommen then geld = geld + fahrplan.praemie end
+            fahrplan.aktiv = false
+            fahrplan.naechst = 40.0 + math.random() * 40.0
+        end
+    else
+        fahrplan.naechst = fahrplan.naechst - dt
+        if fahrplan.naechst <= 0.0 then neuer_fahrplan() end
+    end
+end
+
+
 -- --- Ablauf pro Frame ------------------------------------------------------------------------------
 
 function tick(dt)
@@ -390,8 +544,8 @@ function tick(dt)
         if block_tick(b, dt) then warn = true end
     end
 
-    -- Erloes aus der gesamten eingespeisten Leistung beider Bloecke.
-    geld = geld + (bl[1].leistung_el + bl[2].leistung_el) * 0.2 * dt
+    -- Erloes, Betriebskosten und Fahrplan (siehe Abschnitt Wirtschaft weiter oben).
+    wirtschaft_tick(dt)
 
     -- Aktivitaet und Leckage steigen, wenn ein Block ohne abgeriegeltes Containment ueberhitzt.
     for b = 1, 2 do
@@ -494,6 +648,12 @@ for b = 1, 2 do
         else
             zeile(Y_Z2, s.bor and "BOREINSPEISUNG" or (s.frei and "FREIGEGEBEN" or "GESPERRT"))
         end
+        -- Abbrand: die Zahl, an der man ablesen kann, wie lange dieser Block noch Volllast kann.
+        if s.revision then
+            zeile(Y_Z3, string.format("REVISION %3.0f %%", s.abbrand))
+        else
+            zeile(Y_Z3, string.format("ABBRAND %3.0f %%", s.abbrand), s.abbrand > 70.0)
+        end
     end
 
     el(p .. "disp_pri").ondraw = function()
@@ -523,13 +683,24 @@ for b = 1, 2 do
     end
 end
 
+-- Das Marktdisplay. Kontostand und Ziel stehen bereits im Fenster oben rechts, deshalb zeigt
+-- dieses Display das, was die Entscheidung traegt: was die Leistung gerade wert ist, was der
+-- laufende Betrieb kostet und ob gerade ein Fahrplan zu holen ist.
 disp_netz.ondraw = function()
-    kopf("NETZ GESAMT MW")
-    zahl(string.format("%5.0f", bl[1].leistung_el + bl[2].leistung_el), false)
-    zeile(Y_Z1, string.format("B1 %4.0f  B2 %4.0f", bl[1].leistung_el, bl[2].leistung_el))
-    balken(geld / ziel, false)
-    zeile(Y_Z2, string.format("GELD %d", math.floor(geld)))
-    zeile(Y_Z3, string.format("ZIEL %d", math.floor(ziel)))
+    local netz_mw = bl[1].leistung_el + bl[2].leistung_el
+    kopf("NETZ / MARKT MW")
+    zahl(string.format("%5.0f", netz_mw), false)
+    zeile(Y_Z1, string.format("PREIS %4.2f  -%3.0f/S", markt.preis, markt.kosten))
+    balken(markt.preis / 2.0, markt.preis < 0.6)
+    if fahrplan.aktiv then
+        local drin = netz_mw >= fahrplan.min and netz_mw <= fahrplan.max
+        zeile(Y_Z2, string.format("SOLL %4.0f-%4.0f MW", fahrplan.min, fahrplan.max), not drin)
+        zeile(Y_Z3, string.format("%3.0f S  PRAEMIE %4.0f", fahrplan.rest, fahrplan.praemie),
+              fahrplan.angenommen and not drin)
+    else
+        zeile(Y_Z2, "KEIN FAHRPLAN")
+        zeile(Y_Z3, string.format("ANGEBOT IN %3.0f S", fahrplan.naechst))
+    end
 end
 
 disp_meld.ondraw = function()

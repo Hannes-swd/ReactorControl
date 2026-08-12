@@ -13,6 +13,7 @@
     --rule: #c9d1d9;
     --code-bg: #f2f4f6;
     --rot: #b32a24;
+    --gruen: #1e7a46;
   }
 
   * { box-sizing: border-box; }
@@ -157,13 +158,17 @@
 
   /* ---------- Kästen ---------- */
 
-  .hinweis, .warnung {
+  .hinweis, .warnung, .chance {
     padding: 8pt 12pt; margin: 10pt 0;
     break-inside: avoid; page-break-inside: avoid;
   }
   .hinweis { border-left: 2.5pt solid var(--accent); background: #f5f8fb; }
   .warnung { border-left: 2.5pt solid var(--rot);    background: #fdf4f3; }
-  .hinweis p:last-child, .warnung p:last-child { margin-bottom: 0; }
+  /* Chance: alles, was Geld bringt, aber niemand vorschreibt. Bewusst eine eigene Farbe,
+     damit man beim Blaettern die Entscheidungsstellen findet, ohne zu lesen. */
+  .chance  { border-left: 2.5pt solid var(--gruen);  background: #f3faf5; }
+  .chance .kopf { color: var(--gruen); }
+  .hinweis p:last-child, .warnung p:last-child, .chance p:last-child { margin-bottom: 0; }
   .kopf {
     font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.05em;
     font-weight: 600; margin-bottom: 3pt;
@@ -212,6 +217,7 @@
             <li><a href="#k1-2-3">Anlagenkennzeichen</a></li>
           </ol>
         </li>
+        <li><a href="#k1-3">Dein Auftrag</a></li>
       </ol>
     </li>
     <li><a href="#k2">Gemeinsame Anlagenteile</a>
@@ -221,6 +227,7 @@
         <li><a href="#k2-3">Zwischenkühlkreis und Komponentenkühlung</a></li>
         <li><a href="#k2-4">Nebenanlagen und Überwachung</a></li>
         <li><a href="#k2-5">Fehlerbehebung</a></li>
+        <li><a href="#k2-6">Handlungsspielraum</a></li>
       </ol>
     </li>
     <li><a href="#k3">Blockfreigabe und Schutz</a>
@@ -243,6 +250,7 @@
         <li><a href="#k4-3">Boreinspeisung</a></li>
         <li><a href="#k4-4">Rückmeldungen</a></li>
         <li><a href="#k4-5">Fehlerbehebung</a></li>
+        <li><a href="#k4-6">Handlungsspielraum</a></li>
       </ol>
     </li>
     <li><a href="#k5">Primärkreis</a>
@@ -252,6 +260,7 @@
         <li><a href="#k5-3">Sicherheits- und Hilfssysteme</a></li>
         <li><a href="#k5-4">Rückmeldungen</a></li>
         <li><a href="#k5-5">Fehlerbehebung</a></li>
+        <li><a href="#k5-6">Handlungsspielraum</a></li>
       </ol>
     </li>
     <li><a href="#k6">Sekundärkreis</a>
@@ -259,6 +268,7 @@
         <li><a href="#k6-1">Dampferzeuger und Speisewasser</a></li>
         <li><a href="#k6-2">Frischdampf und Umleitstation</a></li>
         <li><a href="#k6-3">Fehlerbehebung</a></li>
+        <li><a href="#k6-4">Handlungsspielraum</a></li>
       </ol>
     </li>
     <li><a href="#k7">Turbosatz und Netz</a>
@@ -267,6 +277,7 @@
         <li><a href="#k7-2">Generator</a></li>
         <li><a href="#k7-3">Netzschalter und Synchronisation</a></li>
         <li><a href="#k7-4">Fehlerbehebung</a></li>
+        <li><a href="#k7-5">Handlungsspielraum</a></li>
       </ol>
     </li>
     <li><a href="#k8">Anzeigen</a>
@@ -296,6 +307,16 @@
         <li><a href="#k10-1">Sperrzonen an den Pultecken</a></li>
         <li><a href="#k10-2">Lesbarkeit der Beschriftungen</a></li>
         <li><a href="#k10-3">Platzhalter-Physik</a></li>
+      </ol>
+    </li>
+    <li><a href="#k11">Markt und Wirtschaft</a>
+      <ol>
+        <li><a href="#k11-1">Der Strompreis</a></li>
+        <li><a href="#k11-2">Laufende Kosten</a></li>
+        <li><a href="#k11-3">Einmalige Kosten</a></li>
+        <li><a href="#k11-4">Fahrplanb&auml;nder</a></li>
+        <li><a href="#k11-5">Brennstoff und Revision</a></li>
+        <li><a href="#k11-6">Drei Fahrweisen</a></li>
       </ol>
     </li>
   </ol>
@@ -393,6 +414,26 @@
 
 <p>Auf den Tastern und der rechten Leuchte stehen die Aktionen und Zustände: <span class="kurz">EIN</span> · <span class="kurz">AUS</span> · <span class="kurz">AUF</span> · <span class="kurz">ZU</span> · <span class="kurz">STR</span> Störung · <span class="kurz">HI</span> Grenzwert überschritten · <span class="kurz">LOW</span> Wert zu niedrig · <span class="kurz">BER</span> bereit · <span class="kurz">RST</span> rücksetzen · <span class="kurz">SYN</span> synchronisierbereit · <span class="kurz">UEB</span> Überdrehzahl · <span class="kurz">ERR</span> erregen · <span class="kurz">QIT</span> quittieren · <span class="kurz">TST</span> Lampentest · <span class="kurz">ISO</span> abriegeln · <span class="kurz">STA</span> Start.</p>
 
+
+<h2 id="k1-3">Dein Auftrag</h2>
+
+<p>Die Anlage geh&ouml;rt einem Betreiber, und der verdient sein Geld am Strommarkt. Deine Aufgabe ist nicht, eine Reihenfolge abzuarbeiten, sondern <strong>das Ziel oben rechts im Fenster zu erreichen</strong> &mdash; mit welcher Fahrweise, entscheidest du.</p>
+
+<p>Dazu drei S&auml;tze, die den Rest des Handbuchs erkl&auml;ren:</p>
+
+<ul>
+  <li>Eingespeiste Leistung bringt Geld, aber der <strong>Preis schwankt</strong>. Dieselben Megawatt sind zur Spitze mehr als das Doppelte wert wie im Tal.</li>
+  <li>Jedes laufende Aggregat <strong>kostet</strong> &mdash; jede Pumpe, jeder Diesel, jede Notk&uuml;hlung. Sicherheit ist nicht gratis, sie ist eine Ausgabe.</li>
+  <li>Fehler kosten <strong>sofort und sp&uuml;rbar</strong>: eine Schnellabschaltung 2.500&nbsp;&euro;, eine Boreinspeisung 600&nbsp;&euro; plus laufende Kosten, ein Blackout 40&nbsp;&euro; je Sekunde.</li>
+</ul>
+
+<p>Was daraus folgt, steht nicht hier, sondern verteilt bei den Anlagenteilen: jedes Kapitel endet mit einem Abschnitt <em>Handlungsspielraum</em>, der beschreibt, was an dieser Stelle zu holen ist und was es riskiert. Die Zahlen dazu stehen gesammelt in <strong>Kapitel&nbsp;11, Markt und Wirtschaft</strong>.</p>
+
+<div class="chance">
+  <div class="kopf">So liest man dieses Handbuch</div>
+  <p>Kapitel&nbsp;1 bis 8 beschreiben, <em>was</em> die Anlage kann. Kapitel&nbsp;9 zeigt auf zwei Seiten, wie man einen Block &uuml;berhaupt ans Netz bekommt &mdash; das ist der Pflichtteil, und er ist kurz. Alles Weitere sind Angebote. Wer nur die Kurzanleitung befolgt, verdient Geld; wer die <em>Handlungsspielraum</em>-Abschnitte nutzt, verdient deutlich mehr und kann dabei auch verlieren.</p>
+</div>
+
 <h1 id="k2">Gemeinsame Anlagenteile</h1>
 
 <p>Die Mittelfläche trägt alles, was beide Blöcke gemeinsam nutzen. <strong>Diese Systeme werden zuerst in Betrieb genommen</strong> — ohne sie lässt sich kein Block anfahren.</p>
@@ -466,6 +507,28 @@
     <tr><td>AKT und LCK blinken rot</td><td>Ein Block über 320 °C bei offenem Containment</td><td>Kühlung verbessern, Containment mit ISO abriegeln, danach quittieren</td></tr>
   </tbody>
 </table>
+
+
+<h2 id="k2-6">Handlungsspielraum</h2>
+
+<p>Die gemeinsamen Anlagen sind der gr&ouml;&szlig;te Dauerposten auf der Kostenseite, weil sie laufen, solange &uuml;berhaupt etwas l&auml;uft. Hier wird kein Geld verdient, hier wird welches gespart &mdash; daf&uuml;r dauerhaft.</p>
+
+<table>
+  <caption>Was an dieser Stelle zu holen ist.</caption>
+  <thead><tr><th>Ma&szlig;nahme</th><th class="zahl">Wirkung</th><th>Preis daf&uuml;r</th></tr></thead>
+  <tbody>
+    <tr><td>Nach Netzwiederkehr vom Notstromdiesel zur&uuml;ck auf Eigenbedarf</td><td class="zahl">&minus;14 &euro;/s je Diesel</td><td>keiner &mdash; reines Vers&auml;umnis, wenn man es vergisst</td></tr>
+    <tr><td>K&uuml;hlkette des stillstehenden Blocks abschalten (<span class="kurz">KW</span>, <span class="kurz">KD</span>, <span class="kurz">VA</span>, <span class="kurz">KK</span>)</td><td class="zahl">&minus;7 &euro;/s</td><td>der Block braucht danach wieder Zeit f&uuml;r den Vakuumaufbau</td></tr>
+    <tr><td>Nur eine Schiene fahren</td><td class="zahl">&minus;0,5 &euro;/s</td><td>f&auml;llt sie aus, steht die ganze Anlage</td></tr>
+  </tbody>
+</table>
+
+<p>L&uuml;ftung, Brandschutz, Wartenklima und Batterie kosten nichts &mdash; sie abzuschalten bringt also auch nichts.</p>
+
+<div class="chance">
+  <div class="kopf">Der zweite Diesel als Wette</div>
+  <p>Ein mitlaufender Notstromdiesel kostet 16&nbsp;&euro; je Sekunde, auf eine Minute rund 1.000&nbsp;&euro;. Ein Blackout bei freigegebenem Block kostet 40&nbsp;&euro; je Sekunde und f&uuml;hrt zus&auml;tzlich zur Schnellabschaltung beider Bl&ouml;cke, also 2.500&nbsp;&euro; je Block. Der Diesel lohnt sich deshalb nicht als Dauerl&auml;ufer, sondern als schnelle Antwort. Wer ihn kalt stehen l&auml;sst, spart &mdash; und muss ihn im Ernstfall in wenigen Sekunden finden.</p>
+</div>
 
 <h1 id="k3">Blockfreigabe und Schutz</h1>
 
@@ -570,6 +633,22 @@
   </tbody>
 </table>
 
+
+<h2 id="k4-6">Handlungsspielraum</h2>
+
+<p>Am Reaktor liegt der gr&ouml;&szlig;te Hebel des Spiels, und zwar in beide Richtungen.</p>
+
+<p><strong>&Uuml;berlastbetrieb.</strong> &Uuml;ber 100&nbsp;% thermischer Leistung zahlt das Netz einen <strong>Spitzenzuschlag von 45&nbsp;%</strong> auf den Erl&ouml;s dieses Blocks. Bezahlt wird damit ein Risiko: je weiter &uuml;ber 100&nbsp;% und je h&ouml;her die K&uuml;hlmitteltemperatur, desto wahrscheinlicher f&auml;llt pro Sekunde eine Hauptk&uuml;hlmittel- oder Speisewasserpumpe aus. Oberhalb von 320&nbsp;&deg;C steigt die Ausfallrate sprunghaft. Der Zuschlag rechnet sich am ehesten <em>kurz</em> und <em>zur Preisspitze</em>, nicht als Dauerfahrweise.</p>
+
+<p><strong>Abbrand.</strong> Der Brennstoff verbraucht sich proportional zur erzeugten Leistung; das Display <span class="kurz">REAKTOR x</span> zeigt den Stand. Mit dem Abbrand sinkt die <em>erreichbare</em> Leistung: bei 30&nbsp;% Abbrand sind h&ouml;chstens noch 70&nbsp;% m&ouml;glich. Nachgeladen wird nur im abgestellten Block &mdash; Schl&uuml;sselschalter auf AUS, St&auml;be unten, Leistung abgeklungen. Die Revision l&auml;uft dann von selbst, kostet 55&nbsp;&euro;/s und holt rund 6&nbsp;% Abbrand je Sekunde zur&uuml;ck.</p>
+
+<p><strong>Bor.</strong> Die Boreinspeisung kostet einmalig 600&nbsp;&euro; und danach 25&nbsp;&euro;/s. Sie ist ein Sicherheitsmittel, kein Regelmittel &mdash; Leistung zur&uuml;cknehmen kann man mit den Regelst&auml;ben umsonst.</p>
+
+<div class="chance">
+  <div class="kopf">Wann sich die Revision lohnt</div>
+  <p>Ein Stillstand kostet doppelt: die Revision selbst und den entgangenen Erl&ouml;s. Beides h&auml;ngt am Zeitpunkt. Wer den Block <strong>im Preistal</strong> abstellt, zahlt nur die Revision; wer wartet, bis die Leistung von selbst zusammenf&auml;llt, steht mitten in der Spitze. Bei zwei Bl&ouml;cken bietet es sich an, den Abbrand versetzt zu halten, damit nie beide gleichzeitig nachgeladen werden m&uuml;ssen.</p>
+</div>
+
 <h1 id="k5">Primärkreis</h1>
 
 <h2 id="k5-1">Hauptkühlmittelpumpen</h2>
@@ -634,6 +713,30 @@
   </tbody>
 </table>
 
+
+<h2 id="k5-6">Handlungsspielraum</h2>
+
+<p>Der Prim&auml;rkreis ist die Stelle, an der Sicherheit sichtbar Geld kostet. Alle Aggregate hier laufen im Hintergrund weiter und rechnen jede Sekunde ab.</p>
+
+<table>
+  <caption>Laufende Kosten der Prim&auml;rseite, je Block und Sekunde.</caption>
+  <thead><tr><th>Aggregat</th><th class="zahl">&euro;/s</th><th>Was es einbringt</th></tr></thead>
+  <tbody>
+    <tr><td>Hauptk&uuml;hlmittelpumpe (je)</td><td class="zahl">3,0</td><td>W&auml;rmeabfuhr; eine allein tr&auml;gt nur etwa halbe Leistung</td></tr>
+    <tr><td>Notk&uuml;hlung <span class="kurz">NK</span></td><td class="zahl">9,0</td><td>sehr starke Abfuhr, teuerstes Einzelaggregat der Anlage</td></tr>
+    <tr><td>Sicherheitseinspeisung (je Strang)</td><td class="zahl">6,0</td><td>Reserve bei Druckabfall</td></tr>
+    <tr><td>Nachk&uuml;hlsystem <span class="kurz">NAK</span></td><td class="zahl">4,0</td><td>Abfuhr der Nachzerfallsw&auml;rme nach dem Abstellen</td></tr>
+    <tr><td>Volumenregelung / Druckhalterheizung</td><td class="zahl">1,0 / 1,5</td><td>Druckhaltung</td></tr>
+  </tbody>
+</table>
+
+<p>Daraus ergibt sich die eigentliche Entscheidung: <strong>mit wie wenig K&uuml;hlung f&auml;hrst du?</strong> Eine Pumpe statt zwei spart 3&nbsp;&euro;/s, begrenzt die Leistung aber auf etwa die H&auml;lfte &mdash; im Preistal eine gute, zur Spitze eine schlechte Rechnung. Die Notk&uuml;hlung als Dauerpuffer mitlaufen zu lassen ist bequem und kostet auf eine Minute 540&nbsp;&euro;; das ist ein F&uuml;nftel der Schnellabschaltung, die sie vielleicht verhindert.</p>
+
+<div class="warnung">
+  <div class="kopf">Eine Ausnahme, bei der nicht gespart wird</div>
+  <p>Nach einer Schnellabschaltung l&auml;uft die Nachzerfallsw&auml;rme weiter. Wer hier die K&uuml;hlung abstellt, um Kosten zu sparen, bekommt die n&auml;chste Ausl&ouml;sung wegen zu hoher Temperatur &mdash; und die kostet erneut 2.500&nbsp;&euro;.</p>
+</div>
+
 <h1 id="k6">Sekundärkreis</h1>
 
 <h2 id="k6-1">Dampferzeuger und Speisewasser</h2>
@@ -672,6 +775,18 @@
     <tr><td>FD lässt sich nicht öffnen</td><td>Block nicht freigegeben</td><td>Schlüssel auf START</td></tr>
   </tbody>
 </table>
+
+
+<h2 id="k6-4">Handlungsspielraum</h2>
+
+<p><strong>Die Umleitstation ist ein Geldverbrenner.</strong> Sie f&uuml;hrt Dampf am Turbosatz vorbei in den Kondensator: erzeugt, aber nicht verkauft. Solange sie offen steht, kostet das 0,12&nbsp;&euro; je Sekunde und bar Dampferzeugerdruck &mdash; bei 60&nbsp;bar also rund 7&nbsp;&euro;/s. Beim Anfahren ist sie notwendig, danach nicht mehr. Sie offen zu vergessen ist der h&auml;ufigste stille Verlust.</p>
+
+<p><strong>Speisewasser von Hand.</strong> Die Betriebsart AUTO schaltet die zweite Pumpe zu, sobald das Niveau unter 45&nbsp;% f&auml;llt &mdash; sicher, aber nicht sparsam. Von Hand l&auml;sst sich bei Teillast dauerhaft mit einer Pumpe fahren (&minus;2&nbsp;&euro;/s), solange man das Niveau im Auge beh&auml;lt. F&auml;llt es unter 10&nbsp;%, l&ouml;st der Block aus.</p>
+
+<div class="chance">
+  <div class="kopf">Die Umleitstation als Versicherung</div>
+  <p>Beim Lastabwurf ist genau dieses teure Ventil das, was den Block rettet: es baut den Dampfdruck ab, bevor der Prim&auml;rdruck die Schnellabschaltung ausl&ouml;st. 7&nbsp;&euro;/s gegen 2.500&nbsp;&euro; &mdash; in dieser Lage ein gutes Gesch&auml;ft, in jeder anderen ein schlechtes.</p>
+</div>
 
 <h1 id="k7">Turbosatz und Netz</h1>
 
@@ -713,6 +828,20 @@
     <tr><td>UEB leuchtet, Turbosatz abgeworfen</td><td>Überdrehzahl nach Lastabwurf</td><td>Kapitel 9.5.2</td></tr>
   </tbody>
 </table>
+
+
+<h2 id="k7-5">Handlungsspielraum</h2>
+
+<p>Am Netzschalter entscheidet sich, ob die erzeugte Leistung Geld wird. Zwei Dinge lassen sich hier holen, die die Fahrweise deutlich ver&auml;ndern.</p>
+
+<p><strong>Der Fahrplan.</strong> Das Netz bietet in unregelm&auml;&szlig;igen Abst&auml;nden ein Lastband an: Untergrenze, Obergrenze und Laufzeit stehen auf dem Display <span class="kurz">NETZ / MARKT</span>. Angenommen wird es <em>nicht per Taster</em>, sondern indem man liefert &mdash; wer die Gesamtleistung einmal in das Band bringt, steht im Wort. Wer bis zum Ablauf drinbleibt, bekommt die Pr&auml;mie; wer das Band vorher wieder verl&auml;sst, zahlt 75&nbsp;% davon als Strafe. Wer das Angebot ignoriert, verkauft weiter zum Marktpreis und verliert nichts.</p>
+
+<p><strong>Der Zeitpunkt.</strong> Der Preis durchl&auml;uft etwa alle f&uuml;nf Minuten einen vollen Zyklus zwischen rund 0,25 und 1,8. Volllast im Tal bringt weniger als halbe Last in der Spitze, bei gleichen Kosten. Wer die Kurve auf dem Marktdisplay verfolgt, legt Revisionen und das Abfahren eines Blocks bewusst ins Tal.</p>
+
+<div class="chance">
+  <div class="kopf">Ein Block oder zwei?</div>
+  <p>Beide Bl&ouml;cke am Netz verdoppeln nicht nur den Erl&ouml;s, sondern auch die Fixkosten: zwei K&uuml;hlketten, vier Pumpen, zwei Speisewasserstr&auml;nge. Ein Block auf Volllast ist billiger als zwei auf halber Last. Zwei Bl&ouml;cke sind daf&uuml;r die einzige Chance auf die breiten Fahrplanb&auml;nder und die einzige Reserve, wenn einer ausf&auml;llt. Beides ist eine g&uuml;ltige Fahrweise.</p>
+</div>
 
 <h1 id="k8">Anzeigen</h1>
 
@@ -771,111 +900,49 @@
 <h1 id="k9">Betrieb</h1>
 
 <h2 id="k9-1">Anfahren eines Blocks</h2>
-<p>Zuerst die gemeinsamen Anlagen, dann der Block. Wer eine Stufe &uuml;berspringt, bekommt eine St&ouml;rmeldung statt eines Anlaufs. Jeder Schritt zeigt die Bediengruppe in Nahaufnahme; der rote Kasten umschlie&szlig;t den zu dr&uuml;ckenden Taster und die zugeh&ouml;rige Meldeleuchte.</p>
+<p>Zuerst die gemeinsamen Anlagen, dann der Block: die H&auml;lfte der Anlage ist Vorsystem f&uuml;r die andere H&auml;lfte.</p>
+<h3 id="k9-1-1">Kaltstart in 19 Handgriffen</h3>
+
+<p>Das ist der Pflichtteil des Handbuchs, und er passt auf eine Seite. Die Reihenfolge ergibt sich aus den Vorsystemen: was ein anderes System braucht, kommt danach. Wer eine Stufe &uuml;berspringt, bekommt eine St&ouml;rmeldung im Klartext statt eines Anlaufs &mdash; die Meldung sagt, was fehlt.</p>
+
+<p>Wo die Gruppen liegen, zeigen die Abbildungen&nbsp;1 bis&nbsp;3 in Kapitel&nbsp;1.1; die Dreibuchstaben-K&uuml;rzel l&ouml;st die Tabelle in Kapitel&nbsp;1.2.3 auf. Beschrieben ist hier <strong>Block&nbsp;1</strong> (linker Fl&uuml;gel); f&uuml;r Block&nbsp;2 gilt dasselbe mit den Systemen der rechten Seite.</p>
+
+<table>
+  <caption>Kaltstart eines Blocks bis ans Netz.</caption>
+  <thead><tr><th class="zahl">Nr.</th><th>Fl&auml;che</th><th>Handgriff</th><th>Warum</th></tr></thead>
+  <tbody>
+    <tr><td class="zahl">1</td><td>Mitte</td><td><span class="kurz">EB</span> EIN</td><td>Normalversorgung; allein noch ohne Wirkung</td></tr>
+    <tr><td class="zahl">2</td><td>Mitte</td><td><span class="kurz">SCA</span> EIN</td><td>erst mit Schiene liegt Strom an</td></tr>
+    <tr><td class="zahl">3</td><td>Mitte</td><td><span class="kurz">ZWK</span> EIN</td><td>versorgt die Komponentenk&uuml;hlung</td></tr>
+    <tr><td class="zahl">4</td><td>Mitte</td><td><span class="kurz">KK1</span> EIN</td><td>ohne sie werden die Hauptk&uuml;hlmittelpumpen abgewiesen</td></tr>
+    <tr><td class="zahl">5</td><td>Mitte</td><td><span class="kurz">KW1</span> EIN</td><td>erste Stufe der Kondensationsanlage</td></tr>
+    <tr><td class="zahl">6</td><td>Mitte</td><td><span class="kurz">KD1</span> EIN</td><td>setzt Hauptk&uuml;hlwasser voraus</td></tr>
+    <tr><td class="zahl">7</td><td>Mitte</td><td><span class="kurz">VA1</span> EIN</td><td>Vakuum l&auml;uft &uuml;ber einige Sekunden auf etwa 95&nbsp;%</td></tr>
+    <tr><td class="zahl">8</td><td>Mitte</td><td><span class="kurz">AUT</span> dr&uuml;cken</td><td>Speisewasser regelt selbstt&auml;tig (optional, siehe 6.4)</td></tr>
+    <tr><td class="zahl">9</td><td>Mitte</td><td><span class="kurz">FR1</span> Schl&uuml;ssel auf START</td><td>gibt St&auml;be und Blockantriebe frei</td></tr>
+    <tr><td class="zahl">10</td><td>Links</td><td><span class="kurz">HK1</span> EIN</td><td>W&auml;rmeabfuhr aus dem Prim&auml;rkreis</td></tr>
+    <tr><td class="zahl">11</td><td>Links</td><td><span class="kurz">HK2</span> EIN</td><td>eine Pumpe allein tr&auml;gt nur etwa halbe Leistung (siehe 5.6)</td></tr>
+    <tr><td class="zahl">12</td><td>Links</td><td><span class="kurz">G1</span> dr&uuml;cken</td><td>ohne Stabgruppe fahren die St&auml;be nicht</td></tr>
+    <tr><td class="zahl">13</td><td>Links</td><td><span class="kurz">RX</span> AUS mehrfach</td><td>je Klick 5&nbsp;%; 40&ndash;50&nbsp;% gen&uuml;gen zum Anfahren</td></tr>
+    <tr><td class="zahl">14</td><td>Links</td><td><span class="kurz">HZG</span> / <span class="kurz">SPR</span></td><td>Prim&auml;rdruck zwischen 100 und 170&nbsp;bar halten</td></tr>
+    <tr><td class="zahl">15</td><td>Links</td><td><span class="kurz">BYP</span> AUF</td><td>Dampfabnehmer, bis der Dampfdruck 15&nbsp;bar &uuml;berschreitet</td></tr>
+    <tr><td class="zahl">16</td><td>Links</td><td><span class="kurz">FD</span> AUF</td><td>gibt den Dampf auf die Turbine</td></tr>
+    <tr><td class="zahl">17</td><td>Links</td><td><span class="kurz">TUR</span> EIN</td><td>braucht Vakuum &uuml;ber 50&nbsp;%; Drehzahl l&auml;uft auf 100&nbsp;%</td></tr>
+    <tr><td class="zahl">18</td><td>Links</td><td><span class="kurz">GEN</span> ERR</td><td>erregen, sobald die Drehzahl steht; <span class="kurz">SYN</span> meldet Bereitschaft</td></tr>
+    <tr><td class="zahl">19</td><td>Mitte</td><td><span class="kurz">NZ1</span> EIN</td><td>nur im Fenster 98&ndash;102&nbsp;%; ab hier l&auml;uft der Erl&ouml;s</td></tr>
+  </tbody>
+</table>
+
 <p><strong>Steuerung:</strong> Pfeiltasten <span class="kurz">&larr;</span> und <span class="kurz">&rarr;</span> wechseln die Blickrichtung, Linksklick dr&uuml;ckt einen Taster, <span class="kurz">ESC</span> beendet. Der Blick startet auf der Mittelfl&auml;che.</p>
-<h3 id="k9-1-1">Schritte 1 bis 9 &ndash; Mittelfl&auml;che</h3>
-<p>Stromversorgung, K&uuml;hlkette und Blockfreigabe. Alles auf der Fl&auml;che, auf die du beim Start schaust.</p>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">1</span><strong>Eigenbedarf <span class="kurz">EB</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Die Normalversorgung. Sie allein gen&uuml;gt noch nicht &mdash; es fehlt die Schiene.</p>
-  <img src="img/schritt_1.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 1">
+
+<div class="warnung"><div class="kopf">Reihenfolge nicht vertauschen</div><p>Erst den Abnehmer, dann die Leistung. Steht kein Dampfabnehmer bereit &mdash; Umleitstation und Frischdampfventil beide zu &mdash; steigt der Dampferzeugerdruck ungebremst, w&auml;hrend der Reaktor weiter heizt. Der Block geht dann &uuml;ber den Prim&auml;rdruck in Schnellabschaltung.</p></div>
+
+<p>Zur Kontrolle dient die <strong>Statusleiste</strong> von Block&nbsp;1 auf der Mittelfl&auml;che: <span class="kurz">RX PRI DH DE SPW TUR GEN NTZ</span> schaltet beim Anfahren von links nach rechts durch. Die erste dunkle Leuchte zeigt, an welcher Stelle die Kette abrei&szlig;t.</p>
+
+<div class="chance">
+  <div class="kopf">Ab hier h&ouml;rt die Anleitung auf</div>
+  <p>Mehr schreibt dieses Handbuch nicht vor. Wie viel Leistung du f&auml;hrst, wie viele Pumpen dabei laufen, wann du den zweiten Block dazunimmst, ob du Fahrplanb&auml;nder bedienst und wann du zum Nachladen abstellst &mdash; das sind Entscheidungen, keine Schritte. Die Grundlage daf&uuml;r steht in Kapitel&nbsp;11, die einzelnen M&ouml;glichkeiten in den Abschnitten <em>Handlungsspielraum</em> der Kapitel&nbsp;2 und 4 bis 7.</p>
 </div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">2</span><strong>Schiene A <span class="kurz">SCA</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Erst jetzt liegt Strom an. Die rote St&ouml;rleuchte neben <span class="kurz">EB</span> erlischt, und ab hier lassen sich &uuml;berhaupt Antriebe starten.</p>
-  <img src="img/schritt_2.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 2">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">3</span><strong>Zwischenk&uuml;hlkreis <span class="kurz">ZWK</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Versorgt die Komponentenk&uuml;hlung beider Bl&ouml;cke.</p>
-  <img src="img/schritt_3.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 3">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">4</span><strong>Komponentenk&uuml;hlung <span class="kurz">KK1</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">K&uuml;hlt die Lager der Hauptk&uuml;hlmittelpumpen. Ohne sie werden die Pumpen sp&auml;ter abgewiesen.</p>
-  <img src="img/schritt_4.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 4">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">5</span><strong>Hauptk&uuml;hlwasser <span class="kurz">KW1</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Erste Stufe der Kondensationsanlage.</p>
-  <img src="img/schritt_5.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 5">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">6</span><strong>Kondensator <span class="kurz">KD1</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Setzt das Hauptk&uuml;hlwasser voraus.</p>
-  <img src="img/schritt_6.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 6">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">7</span><strong>Vakuumpumpe <span class="kurz">VA1</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Setzt Kondensator und K&uuml;hlwasser voraus. Das Vakuum baut sich &uuml;ber einige Sekunden auf bis etwa 95 % &mdash; ablesbar auf dem Display <span class="kurz">BLOCK 1</span>.</p>
-  <img src="img/schritt_7.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 7">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">8</span><strong>Betriebsart <span class="kurz">AUT</span> &rarr; dr&uuml;cken</strong></p>
-  <p style="margin:0 0 2pt;">Ab jetzt regeln die Speisewasserpumpen das Dampferzeugerniveau selbstt&auml;tig. Erspart st&auml;ndiges Nachf&uuml;hren.</p>
-  <img src="img/schritt_8.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 8">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">9</span><strong>Blockfreigabe <span class="kurz">FR1</span> &rarr; Schl&uuml;ssel drehen</strong></p>
-  <p style="margin:0 0 2pt;">Der Block ist freigegeben, die Leuchte <span class="kurz">FR1</span> wird gr&uuml;n. Erst jetzt lassen sich Regelst&auml;be und Blockantriebe bewegen.</p>
-  <img src="img/schritt_9.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 9">
-</div>
-<h3 id="k9-1-2">Schritte 10 bis 18 &ndash; linker Fl&uuml;gel</h3>
-<p>Mit der Pfeiltaste <span class="kurz">&larr;</span> zum linken Fl&uuml;gel drehen. F&uuml;r Block 2 gilt dasselbe auf dem rechten Fl&uuml;gel.</p>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">10</span><strong>Hauptk&uuml;hlmittelpumpe 1 <span class="kurz">HK1</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Auf dem linken Fl&uuml;gel, vorderes Band.</p>
-  <img src="img/schritt_10.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 10">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">11</span><strong>Hauptk&uuml;hlmittelpumpe 2 <span class="kurz">HK2</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Beide werden gebraucht: eine allein reicht nur bis etwa halbe Leistung. Die Statusleuchte <span class="kurz">PRI</span> wird gr&uuml;n.</p>
-  <img src="img/schritt_11.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 11">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">12</span><strong>Stabgruppe <span class="kurz">G1</span> &rarr; dr&uuml;cken</strong></p>
-  <p style="margin:0 0 2pt;">Ohne freigegebene Stabgruppe lassen sich die St&auml;be nicht ausfahren &mdash; es erscheint sonst die Meldung KEINE STABGRUPPE.</p>
-  <img src="img/schritt_12.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 12">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">13</span><strong>Regelst&auml;be <span class="kurz">RX</span> &rarr; Taster AUS mehrfach</strong></p>
-  <p style="margin:0 0 2pt;">Jeder Klick f&auml;hrt die St&auml;be 5 % weiter heraus und erh&ouml;ht die Leistung. Etwa 40&ndash;50 % gen&uuml;gen zum Anfahren. Der gr&uuml;ne Taster hei&szlig;t AUS, weil er die St&auml;be <em>ausf&auml;hrt</em>.</p>
-  <img src="img/schritt_13.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 13">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">14</span><strong>Druckhalter <span class="kurz">HZG</span> / <span class="kurz">SPR</span></strong></p>
-  <p style="margin:0 0 2pt;">Den Primaerdruck im Bereich 100&ndash;170 bar halten: <span class="kurz">HZG</span> hebt an, <span class="kurz">SPR</span> senkt. Beide Taster schalten um. Anzeige auf dem Display <span class="kurz">PRIMAER 1</span>.</p>
-  <img src="img/schritt_14.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 14">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">15</span><strong>Umleitstation <span class="kurz">BYP</span> &rarr; AUF</strong></p>
-  <p style="margin:0 0 2pt;">F&uuml;hrt Dampf am Turbosatz vorbei in den Kondensator. Offen lassen, bis der Dampferzeugerdruck 15 bar &uuml;berschreitet.</p>
-  <img src="img/schritt_15.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 15">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">16</span><strong>Frischdampfventil <span class="kurz">FD</span> &rarr; AUF</strong></p>
-  <p style="margin:0 0 2pt;">Gibt den Dampf auf die Turbine frei. Nur bei freigegebenem Block m&ouml;glich.</p>
-  <img src="img/schritt_16.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 16">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">17</span><strong>Turbine <span class="kurz">TUR</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Setzt ein Vakuum &uuml;ber 50 % voraus, sonst erscheint KEIN VAKUUM. Die Drehzahl l&auml;uft auf 100 % hoch.</p>
-  <img src="img/schritt_17.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 17">
-</div>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">18</span><strong>Generator <span class="kurz">GEN</span> &rarr; ERR</strong></p>
-  <p style="margin:0 0 2pt;">Erregen, sobald die Drehzahl steht. Die orange Leuchte <span class="kurz">SYN</span> meldet, dass synchronisiert werden darf.</p>
-  <img src="img/schritt_18.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 18">
-</div>
-<div class="warnung"><div class="kopf">Reihenfolge nicht vertauschen</div><p>Erst den Abnehmer, dann die Leistung. Steht kein Dampfabnehmer bereit &mdash; Umleitstation und Frischdampfventil beide zu &mdash; steigt der Dampferzeugerdruck ungebremst, w&auml;hrend der Reaktor weiter heizt. Der Block geht dann &uuml;ber den Primaerdruck in Schnellabschaltung.</p></div>
-<h3 id="k9-1-3">Schritt 19 &ndash; ans Netz</h3>
-<p>Zur&uuml;ck zur Mittelfl&auml;che mit der Pfeiltaste <span class="kurz">&rarr;</span>.</p>
-<div style="break-inside:avoid; page-break-inside:avoid; margin:0 0 14pt; padding-bottom:8pt; border-bottom:0.5pt solid #e6eaee;">
-  <p style="margin:0 0 4pt;"><span style="display:inline-block; min-width:22pt; color:#b32a24; font-weight:600;">19</span><strong>Netzschalter <span class="kurz">NZ1</span> &rarr; EIN</strong></p>
-  <p style="margin:0 0 2pt;">Zur&uuml;ck auf der Mittelfl&auml;che. Nur im Drehzahlfenster 98&ndash;102 % und mit erregtem Generator. Danach l&auml;uft der Erl&ouml;s.</p>
-  <img src="img/schritt_19.png" style="display:block; width:100%; border:0.75pt solid #c9d1d9; margin:6pt 0 0;" alt="Schritt 19">
-</div>
-<p>Zur Kontrolle dient die <strong>Statusleiste</strong> von Block 1 auf der Mittelfl&auml;che: <span class="kurz">RX PRI DH DE SPW TUR GEN NTZ</span> schaltet beim Anfahren von links nach rechts durch. Die erste dunkle Leuchte zeigt, an welcher Stelle die Kette abrei&szlig;t.</p>
 
 <h2 id="k9-2">Leistungsbetrieb</h2>
 
@@ -999,6 +1066,97 @@
 <p>Die Blocklogik steht im Skript nur <strong>einmal</strong>: alle Bedienelemente heißen <code>b1_…</code> beziehungsweise <code>b2_…</code>, deshalb genügt eine Schleife über die Blocknummer mit Zugriff über <code>_G</code>. Eine dritte Blockfläche wäre entsprechend wenig Arbeit.</p>
 
 <p>Die Aufteilung ist so angelegt, dass die echte Rechnung später ohne Änderung am Pult eingesetzt werden kann: Das Skript hält die Bedienlogik, die Zustandsgrößen wandern nach <code>src/simulation/</code> in C++-Klassen. Der Grund für diese Trennung: beim Speichern einer Skriptdatei wird der gesamte Lua-Zustand verworfen und neu aufgebaut. Zustandsgrößen in Lua springen dabei jedes Mal auf ihre Startwerte zurück — bei einem Reaktor, der sich über Minuten aufheizt, macht das jedes Feinabstimmen unmöglich. In C++ überleben sie den Reload, während die Konstanten im Skript im laufenden Betrieb änderbar bleiben.</p>
+
+
+<h1 id="k11">Markt und Wirtschaft</h1>
+
+<p>Dieses Kapitel sammelt die Zahlen, mit denen die Anlage abrechnet. Es schreibt keine Fahrweise vor &mdash; es sagt nur, was welche kostet.</p>
+
+<h2 id="k11-1">Der Strompreis</h2>
+
+<p>Die eingespeiste Leistung wird laufend verkauft. Der Erl&ouml;s betr&auml;gt <strong>0,22&nbsp;&euro; je Megawatt und Sekunde, multipliziert mit dem Preisfaktor</strong>. Der Faktor schwankt zwischen rund <strong>0,25 und 1,8</strong> und durchl&auml;uft etwa alle f&uuml;nf Minuten einen vollen Zyklus; eine zweite, k&uuml;rzere Welle liegt dar&uuml;ber, damit die Spitze nicht jedes Mal an derselben Stelle steht.</p>
+
+<p>Der aktuelle Faktor steht auf dem Display <span class="kurz">NETZ / MARKT</span> auf der Mittelfl&auml;che, zusammen mit dem Balken darunter. Rechts daneben stehen die laufenden Kosten in &euro;/s.</p>
+
+<div class="hinweis">
+  <div class="kopf">Die wichtigste Rechnung des Spiels</div>
+  <p>600&nbsp;MW bei Faktor 0,3 bringen rund 40&nbsp;&euro;/s. Dieselben 600&nbsp;MW bei Faktor 1,7 bringen rund 225&nbsp;&euro;/s. Die Kosten sind in beiden F&auml;llen gleich. Deshalb ist der Zeitpunkt wichtiger als die H&ouml;he der Leistung.</p>
+</div>
+
+<h2 id="k11-2">Laufende Kosten</h2>
+
+<table>
+  <caption>Alle laufenden Kostenstellen, je Sekunde.</caption>
+  <thead><tr><th>Posten</th><th class="zahl">&euro;/s</th><th>Anzahl</th></tr></thead>
+  <tbody>
+    <tr><td>Notstromdiesel <span class="kurz">NS1</span> / <span class="kurz">NS2</span></td><td class="zahl">16,0</td><td>je Diesel</td></tr>
+    <tr><td>Notk&uuml;hlung <span class="kurz">NK</span></td><td class="zahl">9,0</td><td>je Block</td></tr>
+    <tr><td>Sicherheitseinspeisung <span class="kurz">SI1</span> / <span class="kurz">SI2</span></td><td class="zahl">6,0</td><td>je Strang und Block</td></tr>
+    <tr><td>Nachk&uuml;hlsystem <span class="kurz">NAK</span></td><td class="zahl">4,0</td><td>je Block</td></tr>
+    <tr><td>Hauptk&uuml;hlmittelpumpe</td><td class="zahl">3,0</td><td>je Pumpe</td></tr>
+    <tr><td>Notspeisewasser <span class="kurz">NSP</span></td><td class="zahl">2,5</td><td>je Block</td></tr>
+    <tr><td>Speisewasserpumpe</td><td class="zahl">2,0</td><td>je Pumpe</td></tr>
+    <tr><td>Eigenbedarf, Zwischenk&uuml;hlkreis, Hauptk&uuml;hlwasser, Kondensator</td><td class="zahl">2,0</td><td>je Aggregat</td></tr>
+    <tr><td>Vakuumpumpe, Komponentenk&uuml;hlung, Druckhalterheizung</td><td class="zahl">1,5</td><td>je Aggregat</td></tr>
+    <tr><td>Volumenregelung</td><td class="zahl">1,0</td><td>je Block</td></tr>
+    <tr><td>Schiene A / B</td><td class="zahl">0,5</td><td>je Schiene</td></tr>
+    <tr><td>Boreinspeisung, solange sie l&auml;uft</td><td class="zahl">25,0</td><td>je Block</td></tr>
+    <tr><td>Revision (Nachladen)</td><td class="zahl">55,0</td><td>je Block</td></tr>
+    <tr><td>Umleitstation offen</td><td class="zahl">0,12 je bar</td><td>je Block</td></tr>
+    <tr><td>Freigegebener Block ohne Stromversorgung</td><td class="zahl">40,0</td><td>je Block</td></tr>
+  </tbody>
+</table>
+
+<p>Kostenlos sind L&uuml;ftung, Brandschutz, Wartenklimatisierung und Batterieversorgung. Eine vollst&auml;ndig angefahrene Doppelblockanlage liegt bei etwa 40&ndash;50&nbsp;&euro;/s Grundkosten.</p>
+
+<h2 id="k11-3">Einmalige Kosten</h2>
+
+<table>
+  <caption>Ereignisse, die sofort abgerechnet werden.</caption>
+  <thead><tr><th>Ereignis</th><th class="zahl">Betrag</th></tr></thead>
+  <tbody>
+    <tr><td>Schnellabschaltung, gleich aus welchem Grund &mdash; auch von Hand und &uuml;ber NOT-AUS</td><td class="zahl">2.500 &euro;</td></tr>
+    <tr><td>Start einer Boreinspeisung</td><td class="zahl">600 &euro;</td></tr>
+    <tr><td>Verletzter Fahrplan</td><td class="zahl">75 % der Pr&auml;mie</td></tr>
+  </tbody>
+</table>
+
+<h2 id="k11-4">Fahrplanb&auml;nder</h2>
+
+<p>In Abst&auml;nden von 40 bis 80 Sekunden bietet das Netz ein Lastband an: eine Untergrenze, 110&nbsp;MW Bandbreite und eine Laufzeit von 60 bis 120 Sekunden. Die Pr&auml;mie betr&auml;gt etwa 14&nbsp;&euro; je Sekunde Laufzeit, bewertet mit dem Preisfaktor zum Zeitpunkt des Angebots &mdash; ein Band, das in der Spitze angeboten wird, ist deutlich mehr wert.</p>
+
+<ul>
+  <li><strong>Annahme:</strong> kein Taster. Wer die Gesamtleistung beider Bl&ouml;cke einmal in das Band bringt, hat angenommen.</li>
+  <li><strong>Erf&uuml;llung:</strong> bis zum Ablauf im Band bleiben &rarr; volle Pr&auml;mie.</li>
+  <li><strong>Bruch:</strong> das Band nach der Annahme wieder verlassen &rarr; Strafe, Meldung FAHRPLAN VERLETZT, Angebot verf&auml;llt.</li>
+  <li><strong>Ignorieren:</strong> nie ins Band fahren &rarr; nichts passiert, das Angebot l&auml;uft ab.</li>
+</ul>
+
+<div class="warnung">
+  <div class="kopf">Der Fahrplan bindet auch im St&ouml;rfall</div>
+  <p>Eine Schnellabschaltung w&auml;hrend eines angenommenen Bandes kostet doppelt: 2.500&nbsp;&euro; f&uuml;r die Ausl&ouml;sung und die Vertragsstrafe, weil die Leistung aus dem Band f&auml;llt. Ein knapp gefahrenes Band ist deshalb genau dann teuer, wenn man ohnehin schon Probleme hat.</p>
+</div>
+
+<h2 id="k11-5">Brennstoff und Revision</h2>
+
+<p>Der Abbrand w&auml;chst mit der erzeugten Leistung: bei Dauervolllast etwa 0,16&nbsp;% je Sekunde, ein Block ist also nach rund zehn Minuten Volllast verbraucht. Die erreichbare Leistung ist auf <em>100&nbsp;% minus Abbrand</em> begrenzt.</p>
+
+<p>Nachgeladen wird ausschlie&szlig;lich im abgestellten Block: Schl&uuml;sselschalter auf AUS, Regelst&auml;be unten, Leistung unter 1&nbsp;%. Das Display <span class="kurz">REAKTOR x</span> zeigt dann REVISION. Zur&uuml;ckgeholt werden rund 6&nbsp;% Abbrand je Sekunde bei 55&nbsp;&euro;/s.</p>
+
+<h2 id="k11-6">Drei Fahrweisen</h2>
+
+<p>Alle drei funktionieren. Sie unterscheiden sich in Ertrag und Nervenkosten.</p>
+
+<table>
+  <caption>Zum Vergleich, nicht zur Nachahmung.</caption>
+  <thead><tr><th>Fahrweise</th><th>Vorgehen</th><th>Charakter</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Grundlast</strong></td><td>Ein Block, alles doppelt abgesichert, konstante Leistung, Fahrpl&auml;ne ignorieren</td><td>langsam, aber praktisch verlustfrei</td></tr>
+    <tr><td><strong>Marktfolger</strong></td><td>Leistung der Preiskurve nachfahren, im Tal abregeln, Revision ins Tal legen</td><td>deutlich ertragreicher, verlangt st&auml;ndiges Beobachten</td></tr>
+    <tr><td><strong>Auf Kante</strong></td><td>Beide Bl&ouml;cke, &Uuml;berlast zur Spitze, minimale K&uuml;hlung, jedes Band annehmen</td><td>h&ouml;chster Ertrag, ein Pumpenausfall kippt die Bilanz</td></tr>
+  </tbody>
+</table>
+
 
 <h1 id="anhang">Anhang: Verzeichnis aller Bediengruppen</h1>
 <p>Dieses Verzeichnis listet jede der 71 Bediengruppen mit ihrer Lage am Pult und der Belegung ihrer vier Elemente. Es wird unmittelbar aus den Platzierungsdateien erzeugt und kann deshalb nicht vom tats&auml;chlichen Pult abweichen.</p>
